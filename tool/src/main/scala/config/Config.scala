@@ -41,6 +41,21 @@ object Config {
 
     val source = allCatch opt scala.io.Source.fromFile(System.getProperty("user.dir") + "/configuration.yaml")
 
+    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.dir") + "/configuration.yaml")
+    result match {
+      case Right(config) => {
+        println("Loaded configuration.yaml successfully.")
+        val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
+        val instance = yaml.load(config.mkString).asInstanceOf[AWSConfig]
+        config.close()
+        Some(instance)
+      }
+      case Left(e) => {
+        println(s"Failed to load configuration.yaml.")
+        None
+      }
+    }
+
     source.map( config => {
       val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
       val instance = yaml.load(config.mkString).asInstanceOf[AWSConfig]
