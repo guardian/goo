@@ -178,16 +178,20 @@ class DestroyCommand() extends Command with Stage with StackName {
       stack <- describeResult.find(_.getStackName == stackShortName)
     } {
 
-      val request = new DeleteStackRequest()
-        .withStackName(stackShortName)
+      if (stage == "PROD") {
+        println("Can not delete PROD stacks")
+      } else {
+        val request = new DeleteStackRequest()
+          .withStackName(stackShortName)
 
-      val result = allCatch either client.deleteStack(request)
-      result match {
-        case Right(x) => {
-          println("Delete Stack Request sent successfully.")
-        }
-        case Left(e) => {
-          println(s"Exception deleting stack: ${e.getMessage}")
+        val result = allCatch either client.deleteStack(request)
+        result match {
+          case Right(x) => {
+            println("Delete Stack Request sent successfully.")
+          }
+          case Left(e) => {
+            println(s"Exception deleting stack: ${e.getMessage}")
+          }
         }
       }
 

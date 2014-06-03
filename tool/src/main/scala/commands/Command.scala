@@ -41,16 +41,13 @@ trait Stage {
   @Option(name = "--prod", metaVar = "PROD stage", usage = "deploy to PROD stage")
   private val prod: Boolean = false
 
-  @Option(name = "--test", metaVar = "TEST stage", usage = "deploy to TEST stage")
-  private val test: Boolean = false
-
   protected def getStage() = {
     (code, prod) match {
       case (true, false) => Some("CODE")
       case (false, true) => Some("PROD")
       case _ => {
-        println("Invalid stage: Specify one of --code or --prod. Using TEST.")
-        Some("TEST")
+        println("Invalid stage: Specify one of --code or --prod.")
+        None
       }
     }
   }
