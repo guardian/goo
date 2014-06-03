@@ -12,6 +12,8 @@ import scala.util.control.Exception.allCatch
 
 object Config {
 
+  lazy val cloudformationHome = new java.io.File(System.getProperty("user.dir") + "/../cloudformation").getCanonicalPath()
+
   lazy val awsUserCredentials: Option[AWSCredentialsProviderChain] = {
 
     getFogConfig("default").map( credentials => {
@@ -44,8 +46,7 @@ object Config {
   }
 
   lazy val awsKeyName: Option[AWSConfig] = {
-
-    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.dir") + "/configuration.yaml")
+    val result = allCatch either scala.io.Source.fromFile(cloudformationHome + "/configuration.yaml")
     result match {
       case Right(config) => {
         val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
@@ -61,7 +62,7 @@ object Config {
   }
 
   private def loadCloudFormationConfig(stack: String): Option[MutableMap[String, JavaMap[String, Object]]] = {
-    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.dir") + s"/${stack}.yaml")
+    val result = allCatch either scala.io.Source.fromFile(cloudformationHome + s"/${stack}.yaml")
     result match {
       case Right(config) => {
         val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, Object]]]))

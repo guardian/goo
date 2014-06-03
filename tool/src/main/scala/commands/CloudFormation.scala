@@ -48,7 +48,7 @@ object CloudFormation {
   def uploadTemplate(stage: String, client: AmazonS3Client, templateFilename: String): Either[Throwable, PutObjectResult] = {
 
     val objectKey = new File(stage, templateFilename).getPath
-    val file = new File(System.getProperty("user.dir"), templateFilename)
+    val file = new File(Config.cloudformationHome, templateFilename)
 
     val result = allCatch either client.putObject("aws-cloudformation", objectKey, file)
     result match {
