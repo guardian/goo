@@ -103,7 +103,7 @@ List all known ec2 instances.
 
 eg. `./goo ec2 list` returns:
 
-<img src="doc/ec2-list.png" alt="Ec2 list" width="600px" height="400px" />
+<img src="doc/ec2-list.png" alt="Ec2 list" width="600px" height="300px" />
 
 ###Deploy
 
