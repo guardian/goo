@@ -28,23 +28,26 @@ object Config {
 
   lazy val riffRaffKey: Option[String] = {
 
-    val source = allCatch opt scala.io.Source.fromFile(System.getProperty("user.home") + "/.riffraff")
+    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.riffraff")
 
-    source.map( config => {
-      val key = config.mkString.trim
-      config.close()
-      key
-    })
+    result match {
+      case Right(config) => {
+        val key = config.mkString.trim
+        config.close()
+        Some(key)
+      }
+      case Left(e) => {
+        println(s"Failed to load ~/.riffraff key file.")
+        None
+      }
+    }
   }
 
   lazy val awsKeyName: Option[AWSConfig] = {
 
-    val source = allCatch opt scala.io.Source.fromFile(System.getProperty("user.dir") + "/configuration.yaml")
-
     val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.dir") + "/configuration.yaml")
     result match {
       case Right(config) => {
-        println("Loaded configuration.yaml successfully.")
         val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
         val instance = yaml.load(config.mkString).asInstanceOf[AWSConfig]
         config.close()
@@ -55,24 +58,22 @@ object Config {
         None
       }
     }
-
-    source.map( config => {
-      val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
-      val instance = yaml.load(config.mkString).asInstanceOf[AWSConfig]
-      config.close()
-      instance
-    })
   }
 
   private def loadCloudFormationConfig(stack: String): Option[MutableMap[String, JavaMap[String, Object]]] = {
-    val source = allCatch opt scala.io.Source.fromFile(System.getProperty("user.dir") + s"/${stack}.yaml")
-
-    source.map( fogConfig => {
-      val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, Object]]]))
-      val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String, Object]]]
-      fogConfig.close()
-      mapAsScalaMap(map)
-    })
+    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.dir") + s"/${stack}.yaml")
+    result match {
+      case Right(config) => {
+        val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, Object]]]))
+        val map = yaml.load(config.mkString).asInstanceOf[JavaMap[String, JavaMap[String, Object]]]
+        config.close()
+        Some(mapAsScalaMap(map))
+      }
+      case Left(e) => {
+        println(s"Failed to load ${stack}.yaml.")
+        None
+      }
+    }
   }
 
   def getCloudFormationParameters(stage: String, stack: String): MutableMap[String, Object] = {
@@ -82,14 +83,19 @@ object Config {
   }
 
   private def getFogConfig(group: String): Option[(String, String)] = {
-    val source = allCatch opt scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog")
-
-    val fileConfig = source.map( fogConfig => {
-      val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, String]]]))
-      val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String,String]]]
-      fogConfig.close()
-      mapAsScalaMap(map)
-    })
+    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog")
+    val fileConfig = result match {
+      case Right(fogConfig) => {
+        val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, String]]]))
+        val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String,String]]]
+        fogConfig.close()
+        Some(mapAsScalaMap(map))
+      }
+      case Left(e) => {
+        println(s"Failed to load ~/.fog configuration")
+        None
+      }
+    }
 
     for {
       config <- fileConfig
