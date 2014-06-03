@@ -135,7 +135,6 @@ instance: `deploy article` will deploy `frontend-article`, and similarly for the
 The `deploy` command takes the following options:
 
 * `--prod`: Deploy to production.
-* `--test`: Deploy to test environment.
 * `--code`: Deploy to code.
 * `--name STRING`: Name of the application you want to deploy, or a comma separated list of apps. Default to all apps.
 
