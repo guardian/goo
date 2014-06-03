@@ -50,7 +50,7 @@ These subcommands are for working with Amazon autoscaling groups.
 
 List all the Ec2 autoscaling groups.
 
-eg. `./goo groups list` returns:
+`./goo groups list` returns:
 
     frontend-CODE-AdminAutoscalingGroup-XXXX               1/1/2
     frontend-CODE-ApplicationsAutoscalingGroup-XXXX        1/1/2
@@ -61,7 +61,7 @@ eg. `./goo groups list` returns:
 
 List further detail about the matching Ec2 autoscaling groups.
 
-eg. `./goo groups list admin` returns:
+`./goo groups list admin` returns:
 
     frontend-CODE-AdminAutoscalingGroup-XXXX                
       Load Balancers: [frontend-AdminLoa-XXXX]
@@ -76,7 +76,7 @@ eg. `./goo groups list admin` returns:
     
       i-07a51045 Healthy/InService
 
-and `./goo groups list code-admin` returns:
+`./goo groups list code-admin` returns:
 
     frontend-CODE-AdminAutoscalingGroup-XXXX                
       Load Balancers: [frontend-AdminLoa-XXXX]
@@ -89,7 +89,7 @@ and `./goo groups list code-admin` returns:
 
 Update the named EC2 autoscaling group with the provided instance parameters.
   
-eg. `./goo groups update frontend-CODE-AdminAutoscalingGroup-XXXX 1 1 2` returns:
+`./goo groups update frontend-CODE-AdminAutoscalingGroup-XXXX 1 1 2` returns:
 
     Updated autoscaling group
 
@@ -101,19 +101,19 @@ There is currently only one subcommand for checking Ec2 instances.
 
 List all known ec2 instances.
 
-eg. `./goo ec2 list` returns:
+`./goo ec2 list` returns:
 
 <img src="doc/ec2-list.png" alt="Ec2 list" width="600px" height="300px" />
 
 ###Deploy
 
-These are subcommands to initiate riff-raff deployments for a given staging environment.
+Initiate riff-raff deployments for a given staging environment.
 
 ####`deploy list`
 
 Lists all the applications that this tool is configured to deploy. The list contains aliases that can be used in deploy command. 
 
-eg. `./goo deploy list` returns:
+`./goo deploy list` returns:
 
     article
     facia
@@ -139,7 +139,7 @@ The `deploy` command takes the following options:
 * `--code`: Deploy to code.
 * `--name STRING`: Name of the application you want to deploy, or a comma separated list of apps. Default to all apps.
 
-eg. `./goo deploy --code` returns:
+`./goo deploy --code` returns:
 
     Deploying article - http://riffraff.gutools.co.uk/deployment/view/c7eacaa1-e46b-4b27-9036-ad81f10af020
     Deploying facia - http://riffraff.gutools.co.uk/deployment/view/46b57358-4d6c-41b5-924e-b970eeed1684
@@ -153,14 +153,82 @@ eg. `./goo deploy --code` returns:
     Deploying diagnostics - http://riffraff.gutools.co.uk/deployment/view/c5871a05-a205-4eef-9b04-dc6d7ac16d7c
     Deploying commercial - http://riffraff.gutools.co.uk/deployment/view/62c7e4bd-f27d-4874-be7c-4dd9b9f77c3f
 
-eg. `./goo deploy --code --name admin` returns:
+`./goo deploy --code --name admin` returns:
 
     Deploying admin - http://riffraff.gutools.co.uk/deployment/view/6b6592dc-f487-46a1-a340-b61258e980cd
 
-eg. `./goo deploy --code --name article,onward` returns:
+`./goo deploy --code --name article,onward` returns:
 
     Deploying article - http://riffraff.gutools.co.uk/deployment/view/e58d7c43-96b0-4b7b-b217-81b7ba2aef1f
     Deploying onward - http://riffraff.gutools.co.uk/deployment/view/d2402528-d8dc-404a-bc09-6310b98442cf
+
+###Cloudformation
+
+####`cloudformation up`
+
+Creates a new stack with the given environment.
+
+`./goo cloudformation update --code frontend-logger` returns:
+
+    Uploaded template from: /platform/cloudformation/frontend-logger.json
+    Create Stack Request sent successfully.
+
+####`cloudformation update`
+
+Updates an existing cloudformation stack. Do check the [AWS documentation](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html)
+concerning resource updates.
+
+`./goo cloudformation update --code frontend` returns:
+    
+    Uploaded template from: /platform/cloudformation/frontend.json
+    Update Stack Request sent successfully.
+    
+####`cloudformation destroy`
+
+Destroys an existing stack.
+
+`./goo cloudformation destroy --code frontend-logger` returns:
+
+    Delete Stack Request sent successfully.
+
+For safety reasons, the tool does not permit deletion of PROD stacks. Please do so manually.
+    
+`./goo cloudformation destroy --prod frontend-logger` returns:
+
+    Can not delete PROD stacks
+
+Development
+-----------
+
+The tool is made up of three parts:
+
+1. a bash script [goo](../goo), which executes
+2. an sbt project `goo-client`, which is a bootstrap loader for
+3. a maven-hosted library `frontend-goo-tool`
+
+This convoluted approach enables users to invoke the bash script simply with parameters, whilst maven's project versioning is given the task of resolving the latest published version of the goo tool.
+
+Developers can run sbt using the supplied [sbt script](sbt). From here, the `frontend-goo-tool` project can be used for development.
+This project is configured so developers can run `publish` for a local-file maven publish.
+
+For testing, switch to the `goo-client` sbt project, and invoke tasks in a similar manner to the [goo](../goo) script.
+In sbt, the `goo-client` can be executed using `run ec2 list`, for example.  
+
+During development it is necessary to modify the repository resolver for the `goo-client` sbt project, so that it points
+ to the local maven repository containing the development `frontend-goo-tool` jar project. A dev-based resolver is included
+ in the sbt project's [build.scala](project/build.scala).
+ 
+Publishing
+----------
+
+A new version of `frontend-goo-tool` can be uploaded to the [Guardian Github](https://github.com/guardian/guardian.github.com) releases Maven repository.
+A copy of the locally-published maven project `frontend-goo-tool`is expected to be added to the 
+[maven repository](https://github.com/guardian/guardian.github.com/tree/master/maven/repo-releases/com/gu/frontend-goo-tool_2.10).
+Remember to do the following:
+
+* Increment the version number in [build.scala](project/build.scala)
+* Run the `update-directory-index.sh` indexer in the [Guardian Github repository](https://github.com/guardian/guardian.github.com)
+
 
 
 
