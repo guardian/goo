@@ -19,11 +19,11 @@ object GooCommand {
 
     allCatch either gooCommand.parser.parseArgument(args.toList) match {
       case Right(x) => {
-        if (gooCommand.doPrintUsage){
-          println("Enter a command for more information, eg. goo groups -h")
+        if (gooCommand.doPrintUsage || gooCommand.cmd == null){
+          println("Goo subcommands:")
           println("\t groups (list|update)")
           println("\t cloudformation (up|update|destroy)")
-          println("\t deploy list")
+          println("\t deploy (list)")
           println("\t ec2 list")
         } else {
           gooCommand.cmd.execute();
