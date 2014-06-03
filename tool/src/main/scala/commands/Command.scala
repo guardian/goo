@@ -41,7 +41,7 @@ trait Stage {
   @Option(name = "--prod", metaVar = "PROD stage", usage = "deploy to PROD stage")
   private val prod: Boolean = false
 
-  @Option(name = "--test", metaVar = "PROD stage", usage = "deploy to PROD stage")
+  @Option(name = "--test", metaVar = "TEST stage", usage = "deploy to TEST stage")
   private val test: Boolean = false
 
   protected def getStage() = {
