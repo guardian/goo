@@ -3,8 +3,8 @@ Goo tool
 
 This is an implementation of our multi-purpose platform tool. It allows a user to:
 
-  * deploy our apps to Ec2 server instances
-  * view Ec2 server groups and modify their sizes (known as 'scaling up/down a group')
+  * deploy our apps to EC2 server instances
+  * view EC2 server groups and modify their sizes (known as 'scaling up/down a group')
   * issue cloudformation commands
   
 There are already ways to do these things; a user can use the Amazon CLI or dashboard,
@@ -48,7 +48,7 @@ These subcommands are for working with Amazon autoscaling groups.
 
 ####`groups list`
 
-List all the Ec2 autoscaling groups.
+List all the EC2 autoscaling groups.
 
 `./goo groups list` returns:
 
@@ -59,7 +59,7 @@ List all the Ec2 autoscaling groups.
 
 ####`groups list <grep_pattern>`
 
-List further detail about the matching Ec2 autoscaling groups.
+List further detail about the matching EC2 autoscaling groups.
 
 `./goo groups list admin` returns:
 
@@ -95,7 +95,7 @@ Update the named EC2 autoscaling group with the provided instance parameters.
 
 ###EC2
 
-There is currently only one subcommand for checking Ec2 instances.
+There is currently only one subcommand for checking EC2 instances.
 
 ####`ec2 list`
 
