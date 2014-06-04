@@ -99,7 +99,7 @@ There is currently only one subcommand for checking EC2 instances.
 
 ####`ec2 list`
 
-List all known ec2 instances.
+List all known EC2 instances.
 
 `./goo ec2 list` returns:
 
