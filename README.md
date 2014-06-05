@@ -211,10 +211,6 @@ Developers can run sbt using the supplied [sbt script](sbt). From here, the `dev
 
 For testing, developers can use the `dev-build` sbt project to invoke tasks in a similar manner to the [goo](../goo) script.
 In sbt, `dev-build` can be executed using `run ec2 list`, for example.  
-
-During development it is necessary to modify the repository resolver for the `goo-client` sbt project, so that it points
- to the local maven repository containing the development `frontend-goo-tool` jar project. A dev-based resolver is included
- in the sbt project's [build.scala](project/build.scala).
  
 Publishing
 ----------
