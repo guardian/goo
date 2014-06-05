@@ -207,11 +207,10 @@ The tool is made up of three parts:
 
 This convoluted approach enables users to invoke the bash script simply with parameters, whilst maven's project versioning is given the task of resolving the latest published version of the goo tool.
 
-Developers can run sbt using the supplied [sbt script](sbt). From here, the `frontend-goo-tool` project can be used for development.
-This project is configured so developers can run `publish` for a local-file maven publish.
+Developers can run sbt using the supplied [sbt script](sbt). From here, the `dev-build` project can be used for development.
 
-For testing, switch to the `goo-client` sbt project, and invoke tasks in a similar manner to the [goo](../goo) script.
-In sbt, the `goo-client` can be executed using `run ec2 list`, for example.  
+For testing, developers can use the `dev-build` sbt project to invoke tasks in a similar manner to the [goo](../goo) script.
+In sbt, `dev-build` can be executed using `run ec2 list`, for example.  
 
 During development it is necessary to modify the repository resolver for the `goo-client` sbt project, so that it points
  to the local maven repository containing the development `frontend-goo-tool` jar project. A dev-based resolver is included
@@ -221,6 +220,8 @@ Publishing
 ----------
 
 A new version of `frontend-goo-tool` can be uploaded to the [Guardian Github](https://github.com/guardian/guardian.github.com) releases Maven repository.
+This project is configured so developers can run `publish` for a local-file maven publish.
+
 A copy of the locally-published maven project `frontend-goo-tool`is expected to be added to the 
 [maven repository](https://github.com/guardian/guardian.github.com/tree/master/maven/repo-releases/com/gu/frontend-goo-tool_2.10).
 Remember to do the following:

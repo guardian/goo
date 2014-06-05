@@ -26,8 +26,9 @@ object GooTool extends Build {
     .settings(
       scalaVersion := "2.10.3",
       resolvers += "Guardian Github Releases" at "http://guardian.github.com/maven/repo-releases",
-      // Replace the releases resolver with the local one below during development.
-      //resolvers += "local maven repo" at "file://" + file("my-maven-repo").getAbsoluteFile().toString(),
       libraryDependencies += "com.gu" %% "frontend-goo-tool" % "latest.integration"
     )
+
+  lazy val gooDevBuild = Project("dev-build", file("."))
+    .dependsOn(gooTool)
 }
