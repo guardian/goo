@@ -11,7 +11,6 @@ import goo.{Config, Command, Stage, StackName, FogAWSCredentials, GooSubCommandH
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
 import com.amazonaws.services.cloudformation.model._
-import scala.Some
 
 class CloudFormationCommand() extends Command {
 

@@ -9,7 +9,6 @@ object GooTool extends Build {
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
       organization := "com.gu",
-      publishTo := Some(Resolver.file("local maven repo", file("my-maven-repo"))),
       version  := gooVersion,
       libraryDependencies ++= Seq(
         "args4j" % "args4j" % "2.0.26",
@@ -19,7 +18,7 @@ object GooTool extends Build {
         "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.3.0",
         "org.slf4j" % "slf4j-simple" % "1.6.2"
       ),
-      publishTo <<= (version) { version: String =>
+      publishTo <<= version { version: String =>
         val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"
         Some(
           Resolver.file(
