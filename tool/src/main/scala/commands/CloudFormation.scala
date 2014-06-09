@@ -10,7 +10,8 @@ import collection.JavaConversions._
 import goo.{Config, Command, Stage, StackName, FogAWSCredentials, GooSubCommandHandler}
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
-import com.amazonaws.services.cloudformation.model.{Stack, Parameter, CreateStackRequest, UpdateStackRequest, DeleteStackRequest}
+import com.amazonaws.services.cloudformation.model._
+import scala.Some
 
 class CloudFormationCommand() extends Command {
 
@@ -100,6 +101,7 @@ class UpdateCommand() extends Command with Stage with StackName {
       val request = new UpdateStackRequest()
         .withTemplateURL(s"https://s3-eu-west-1.amazonaws.com/aws-cloudformation/${objectKey}")
         .withStackName(stackShortName)
+        .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
       val result = allCatch either client.updateStack(request)
@@ -135,6 +137,7 @@ class UpCommand() extends Command with Stage with StackName {
       val request = new CreateStackRequest()
         .withTemplateURL(s"https://s3-eu-west-1.amazonaws.com/aws-cloudformation/${objectKey}")
         .withStackName(stackShortName)
+        .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
       val result = allCatch either client.createStack(request)
