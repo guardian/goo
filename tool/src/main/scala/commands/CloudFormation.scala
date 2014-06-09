@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import scala.util.control.Exception.allCatch
 import collection.JavaConversions._
 
-import goo.{Config, Command, Stage, StackName, FogAWSCredentials, AWSConfig, GooSubCommandHandler}
+import goo.{Config, Command, Stage, StackName, FogAWSCredentials, GooSubCommandHandler}
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
 import com.amazonaws.services.cloudformation.model.{Stack, Parameter, CreateStackRequest, UpdateStackRequest, DeleteStackRequest}
@@ -74,20 +74,11 @@ object CloudFormation {
     }
   }
 
-  def getParameters(stage: String, stackName: String, awsConfig: AWSConfig, fogConfig: FogAWSCredentials): List[Parameter] = {
-
-    val pairs = Config.getCloudFormationParameters(stage, stackName) ++
-        List( ("KeyName", awsConfig.getKey),
-              ("StorageSecretAccessKey", fogConfig.getAWSSecretKey),
-              ("StorageAccessKeyId", fogConfig.getAWSAccessKeyId),
-              ("Stage", stage))
-
-    pairs.map( pair => {
-      val param = new Parameter()
-      param.setParameterKey(pair._1)
-      param.setParameterValue(pair._2.toString)
-      param
-    }).toList
+  def getParameters(stage: String): List[Parameter] = {
+    val param = new Parameter()
+    param.setParameterKey("Stage")
+    param.setParameterValue(stage)
+    param :: Nil
   }
 }
 
@@ -97,8 +88,6 @@ class UpdateCommand() extends Command with Stage with StackName {
 
     for {
       stage <- getStage()
-      awsConfig <- Config.awsKeyName
-      storeCredentials <- Config.frontendStoreCredentials
       s3client <- CloudFormation.s3Client
       client <- CloudFormation.cloudFormationClient
       result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
@@ -111,7 +100,7 @@ class UpdateCommand() extends Command with Stage with StackName {
       val request = new UpdateStackRequest()
         .withTemplateURL(s"https://s3-eu-west-1.amazonaws.com/aws-cloudformation/${objectKey}")
         .withStackName(stackShortName)
-        .withParameters(CloudFormation.getParameters(stage, stackName, awsConfig, storeCredentials))
+        .withParameters(CloudFormation.getParameters(stage))
 
       val result = allCatch either client.updateStack(request)
       result match {
@@ -135,8 +124,6 @@ class UpCommand() extends Command with Stage with StackName {
 
     for {
       stage <- getStage()
-      awsConfig <- Config.awsKeyName
-      storeCredentials <- Config.frontendStoreCredentials
       s3client <- CloudFormation.s3Client
       client <- CloudFormation.cloudFormationClient
       result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
@@ -148,7 +135,7 @@ class UpCommand() extends Command with Stage with StackName {
       val request = new CreateStackRequest()
         .withTemplateURL(s"https://s3-eu-west-1.amazonaws.com/aws-cloudformation/${objectKey}")
         .withStackName(stackShortName)
-        .withParameters(CloudFormation.getParameters(stage, stackName, awsConfig, storeCredentials))
+        .withParameters(CloudFormation.getParameters(stage))
 
       val result = allCatch either client.createStack(request)
       result match {

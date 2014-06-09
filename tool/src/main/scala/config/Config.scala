@@ -22,12 +22,6 @@ object Config {
     })
   }
 
-  lazy val frontendStoreCredentials: Option[FogAWSCredentials] = {
-    getFogConfig(":aws_frontend_store").map( credentials => {
-      new FogAWSCredentials(credentials._1, credentials._2)
-    })
-  }
-
   lazy val riffRaffKey: Option[String] = {
 
     val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.riffraff")
@@ -43,44 +37,6 @@ object Config {
         None
       }
     }
-  }
-
-  lazy val awsKeyName: Option[AWSConfig] = {
-    val result = allCatch either scala.io.Source.fromFile(cloudformationHome + "/configuration.yaml")
-    result match {
-      case Right(config) => {
-        val yaml = new Yaml(new Constructor(classOf[AWSConfig]))
-        val instance = yaml.load(config.mkString).asInstanceOf[AWSConfig]
-        config.close()
-        Some(instance)
-      }
-      case Left(e) => {
-        println(s"Failed to load configuration.yaml.")
-        None
-      }
-    }
-  }
-
-  private def loadCloudFormationConfig(stack: String): Option[MutableMap[String, JavaMap[String, Object]]] = {
-    val result = allCatch either scala.io.Source.fromFile(cloudformationHome + s"/${stack}.yaml")
-    result match {
-      case Right(config) => {
-        val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, Object]]]))
-        val map = yaml.load(config.mkString).asInstanceOf[JavaMap[String, JavaMap[String, Object]]]
-        config.close()
-        Some(mapAsScalaMap(map))
-      }
-      case Left(e) => {
-        println(s"Failed to load ${stack}.yaml.")
-        None
-      }
-    }
-  }
-
-  def getCloudFormationParameters(stage: String, stack: String): MutableMap[String, Object] = {
-    loadCloudFormationConfig(stack).flatMap( config => {
-      config.get(stage).map(mapAsScalaMap(_))
-    }).getOrElse(MutableMap.empty)
   }
 
   private def getFogConfig(group: String): Option[(String, String)] = {
@@ -113,12 +69,4 @@ object Config {
 class FogAWSCredentials(accessKeyId: String, secretKey: String) extends AWSCredentials {
   def getAWSAccessKeyId: String = accessKeyId
   def getAWSSecretKey: String = secretKey
-}
-
-class AWSConfig {
-  @BeanProperty
-  var key: String = ""
-
-  @BeanProperty
-  var bucket: String = ""
 }

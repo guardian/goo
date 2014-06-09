@@ -167,7 +167,7 @@ The `deploy` command takes the following options:
 
 Creates a new stack with the given environment.
 
-`./goo cloudformation update --code frontend-logger` returns:
+`./goo cloudformation up --code frontend-logger` returns:
 
     Uploaded template from: /platform/cloudformation/frontend-logger.json
     Create Stack Request sent successfully.
