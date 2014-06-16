@@ -33,7 +33,7 @@ object Config {
         Some(key)
       }
       case Left(e) => {
-        println(s"Failed to load ~/.riffraff key file.")
+        println(s"Failed to load ~/.riffraff key file. Go to riffraff to get your API key and write it into the key file.")
         None
       }
     }
