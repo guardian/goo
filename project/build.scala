@@ -4,7 +4,7 @@ import sbt.Keys._
 object GooTool extends Build {
 
   // Please update the version each time you publish
-  val gooVersion = "3.0-SNAPSHOT"
+  val gooVersion = "3.1-SNAPSHOT"
 
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
