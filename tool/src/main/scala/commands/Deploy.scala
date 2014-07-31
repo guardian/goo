@@ -78,7 +78,8 @@ object DeployCommand {
     "identity",
     "onward",
     "preview",
-    "sport"
+    "sport",
+    "archive"
   )
 }
 
