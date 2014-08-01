@@ -9,7 +9,7 @@ import goo.{Command, Stage, Config, Json, GooSubCommandHandler}
 
 class DeployCommand() extends Command with Stage {
 
-  @Option(name = "--name", metaVar = "names", usage = "specifies the projects to deploy")
+  @Option(name = "-n", aliases = Array("--name"),  metaVar = "names", usage = "specifies the projects to deploy")
   private val names: String = DeployCommand.projectNames.mkString(",")
   private def namesSpec = names.split(",")
 
