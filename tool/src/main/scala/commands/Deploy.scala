@@ -10,7 +10,7 @@ import goo.{Command, Stage, Config, Json, GooSubCommandHandler}
 class DeployCommand() extends Command with Stage {
 
   @Option(name = "-n", aliases = Array("--name"),  metaVar = "names", usage = "specifies the projects to deploy")
-  private val names: String = DeployCommand.projectNames.mkString(",")
+  private val names: String = DeployCommand.defaultDeployProjectNames.mkString(",")
   private def namesSpec = names.split(",")
 
   @Argument(handler = classOf[GooSubCommandHandler])
@@ -30,7 +30,7 @@ class DeployCommand() extends Command with Stage {
     for {
       key <- Config.riffRaffKey
       stage <- getStage()
-      project <- namesSpec.intersect(DeployCommand.projectNames)
+      project <- namesSpec.intersect(DeployCommand.allProjectNames)
     } {
       val deploy = Map(
         "project" -> s"frontend::${project}",
@@ -102,7 +102,7 @@ object DeployCommand {
 class ListCommand() extends Command {
 
   override def executeImpl() {
-    for (project <- DeployCommand.projectNames) {
+    for (project <- DeployCommand.defaultDeployProjectNames) {
       println(project)
     }
   }
