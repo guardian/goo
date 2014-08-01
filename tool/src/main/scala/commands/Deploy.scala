@@ -102,11 +102,11 @@ object DeployCommand {
 class ListCommand() extends Command {
 
   override def executeImpl() {
-    println("Default Deploy List:")
+    println(s"${Console.CYAN}Default Deploy List:${Console.WHITE}")
     for (project <- DeployCommand.defaultDeployProjectNames) {
       println(project)
     }
-    println("Optional Deploy List:")
+    println(s"${Console.CYAN}Optional Deploy List:${Console.WHITE}")
     for (project <- DeployCommand.allProjectNames.diff(DeployCommand.defaultDeployProjectNames)) {
       println(project)
     }
