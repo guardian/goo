@@ -74,7 +74,6 @@ object DeployCommand {
     "diagnostics",
     "discussion",
     "facia",
-    "facia-tool",
     "identity",
     "onward",
     "preview",
