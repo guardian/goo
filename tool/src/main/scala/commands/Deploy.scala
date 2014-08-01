@@ -66,7 +66,24 @@ class DeployCommand() extends Command with Stage {
 
 object DeployCommand {
 
-  val projectNames = List(
+  val allProjectNames = List(
+    "admin",
+    "applications",
+    "article",
+    "commercial",
+    "diagnostics",
+    "discussion",
+    "facia",
+    "facia-tool",
+    "facia-press",
+    "identity",
+    "onward",
+    "preview",
+    "sport",
+    "archive"
+  )
+
+  val defaultDeployProjectNames = List(
     "admin",
     "applications",
     "article",
