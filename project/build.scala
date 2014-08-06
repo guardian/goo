@@ -3,8 +3,8 @@ import sbt.Keys._
 
 object GooTool extends Build {
 
-  // Please update the version each time you publish
-  val gooVersion = "3.3"
+  // It should always be a snapshot because Sbt will always run update on snapshots.
+  val gooVersion = "3.4-SNAPSHOT"
 
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
@@ -20,19 +20,17 @@ object GooTool extends Build {
       ),
       publishTo <<= version { version: String =>
         val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"
-        Some(
-          Resolver.file(
-            "guardian github " + publishType,
-            file(System.getProperty("user.home") + "/guardian.github.com/maven/repo-" + publishType)
-          )
-        )
+        Some(Resolver.file(
+          "Guardian Github " + publishType,
+          file(System.getProperty("user.home") + "/guardian.github.com/maven/repo-" + publishType)
+        ))
       }
     )
 
   lazy val gooClient = Project("goo-client", file("client"))
     .settings(
-      resolvers += "Guardian Github Releases" at "http://guardian.github.com/maven/repo-releases",
-      libraryDependencies += "com.gu" %% "frontend-goo-tool" % "latest.integration"
+      resolvers += "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots",
+      libraryDependencies += "com.gu" %% "frontend-goo-tool" % gooVersion
     )
 
   lazy val gooDevBuild = Project("dev-build", file("."))
