@@ -218,18 +218,15 @@ Publishing
 A new version of `frontend-goo-tool` can be published to the [Guardian Github](https://github.com/guardian/guardian.github.com) 
 artifact repository.
 
-This is the process to publish a new version:
+This is the process to publish a new version. Note that a version number is not incremented during publishing, due to snapshots. See [Version Numbering](#Version-Numbering):
 
-0. Set the version number in [build.scala](project/build.scala) to the next stable version.  (See [Version Numbering](#Version-Numbering)).
-0. Merge changes.
 0. From goo.d directory, `./sbt "project frontend-goo-tool" publish` 
         
     [This will publish artifacts to ~/guardian.github.com, which is expected to be the local location of the Guardian artifact repository.]
 0. In ~/guardian.github.com: `add` published artifacts to git repo.
 0. From guardian.github.com directory, `./update-directory-index.sh`
 0. In ~/guardian.github.com: `commit` and `push` published artifacts to git repo.
-0. Back in goo.d, set the version number in [build.scala](project/build.scala) to the next snapshot version.  (See [Version Numbering](#Version-Numbering)).
-0. Merge change.
+0. Merge change into platform repo.
 
 Version Numbering
 -----------------
@@ -241,8 +238,7 @@ For example, the addition of a new command or a change to the way an existing co
 A minor change is a bug fix or an extension of the current implementation of a command without actually changing what the command does.
 For example, adding a type of server to the deploy task.
 
-When publishing a new release, increment the version number to the next stable value before publishing the release
-and then increment it again to the next snapshot value after the publish.
-So if the current version is 3.4-SNAPSHOT, the next release is expected to be 3.4 (or 4.0) 
-and after the release the current version will be 3.5-SNAPSHOT (or 4.1-SNAPSHOT).
+When publishing a new release, it is important to use a snapshot. This is necessary because sbt automatically updates dependencies for
+snapshots, regardless of whether `update` is explicitly run or not. This behaviour is ideal for users of `goo-client`, because it ensures
+that they use the latest published version of `frontend-goo-tool` whenever they run a command.
  
