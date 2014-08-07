@@ -15,14 +15,12 @@ object GooTool extends Build {
         "com.amazonaws" % "aws-java-sdk" % "1.7.1",
         "org.yaml" % "snakeyaml" % "1.13",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
-        "com.typesafe.play" %% "play-json" % "2.2.1",
+        "com.typesafe.play" %% "play-json" % "2.3.2",
         "org.slf4j" % "slf4j-simple" % "1.6.2"
       ),
       resolvers := Seq(
-        "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-        "Templemore Repository" at "http://templemore.co.uk/repo",
-        "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/releases/",
-        Classpaths.typesafeResolver
+        Classpaths.typesafeResolver,
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
       ),
       publishTo <<= version { version: String =>
         val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"
@@ -35,7 +33,10 @@ object GooTool extends Build {
 
   lazy val gooClient = Project("goo-client", file("client"))
     .settings(
-      resolvers += "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots",
+      resolvers := Seq(
+        Classpaths.typesafeResolver,
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots"),
       libraryDependencies += "com.gu" %% "frontend-goo-tool" % gooVersion
     )
 
