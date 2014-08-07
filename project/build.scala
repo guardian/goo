@@ -14,9 +14,15 @@ object GooTool extends Build {
         "args4j" % "args4j" % "2.0.26",
         "com.amazonaws" % "aws-java-sdk" % "1.7.1",
         "org.yaml" % "snakeyaml" % "1.13",
-        "net.databinder.dispatch" % "dispatch-core_2.10" % "0.11.0",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.3.0",
+        "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+        "com.typesafe.play" %% "play-json" % "2.2.1",
         "org.slf4j" % "slf4j-simple" % "1.6.2"
+      ),
+      resolvers := Seq(
+        "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+        "Templemore Repository" at "http://templemore.co.uk/repo",
+        "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/releases/",
+        Classpaths.typesafeResolver
       ),
       publishTo <<= version { version: String =>
         val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"

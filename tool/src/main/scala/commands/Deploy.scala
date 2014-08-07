@@ -1,15 +1,16 @@
 package goo.deploy
 
-import org.kohsuke.args4j.{Argument, Option}
+import org.kohsuke.args4j.{Argument, Option => option}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import dispatch._
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.json._
 
-import goo.{Command, Stage, Config, Json, GooSubCommandHandler}
+import goo.{Command, Stage, Config, GooSubCommandHandler}
 
 class DeployCommand() extends Command with Stage {
 
-  @Option(name = "-n", aliases = Array("--name"),  metaVar = "names", usage = "specifies the projects to deploy")
+  @option(name = "-n", aliases = Array("--name"),  metaVar = "names", usage = "specifies the projects to deploy")
   private val names: String = DeployCommand.defaultDeployProjectNames.mkString(",")
   private def namesSpec = names.split(",")
 
@@ -27,29 +28,34 @@ class DeployCommand() extends Command with Stage {
   }
 
   private def deploy() {
+
+    printFrontendStackStatus()
+
     for {
+      response <- promptForAction("Are you sure you want to Deploy?")
       key <- Config.riffRaffKey
       stage <- getStage()
       project <- namesSpec.intersect(DeployCommand.allProjectNames)
+      if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
     } {
-      val deploy = Map(
-        "project" -> s"frontend::${project}",
-        "build"   -> "lastSuccessful",
-        "stage"   -> stage.toUpperCase)
+      val deploy = Seq(
+        "project" -> JsString(s"frontend::${project}"),
+        "build"   -> JsString("lastSuccessful"),
+        "stage"   -> JsString(stage.toUpperCase))
 
       val request = url("https://riffraff.gutools.co.uk/api/deploy/request")
         .secure
         .POST
         .addQueryParameter("key", key)
         .addHeader("Content-Type", "application/json")
-        .setBody(Json.serialise(deploy))
+        .setBody(JsObject(deploy).toString)
 
       val response = Http(request).either()
 
       response match {
         case Right(resp) if resp.getStatusCode == 200 => {
-          val responseObject = Json.deserialize[Map[String,Object]](resp.getResponseBody).getOrElse("response",Map.empty).asInstanceOf[Map[String,String]]
-          println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${responseObject.getOrElse("logURL","")}")
+          val logUrl = Json.parse(resp.getResponseBody) \ "response" \ "logURL"
+          println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString}")
         }
         case Right(resp) => {
           println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Deploy failed for ${project}${Console.WHITE}")
@@ -61,6 +67,78 @@ class DeployCommand() extends Command with Stage {
     }
 
     Http.shutdown()
+  }
+
+  private def printFrontendStackStatus() {
+
+    implicit val readsHistoryItem = Json.reads[RiffRaffHistoryItem]
+
+    for {
+      key <- Config.riffRaffKey
+      stage <- List("CODE", "PROD")
+    } {
+
+      println(s"\n$stage status:\n");
+
+      val projects = stage match {
+        case "CODE" => DeployCommand.allCodeProjectNames
+        case _ => DeployCommand.allProjectNames
+      }
+
+      for {
+        project <- projects
+      } {
+        val request = url("https://riffraff.gutools.co.uk/api/history")
+          .secure
+          .GET
+          .addQueryParameter("key", key)
+          .addQueryParameter("projectName",s"frontend::${project}")
+          .addQueryParameter("stage",stage)
+          .addQueryParameter("pageSize","1")
+          .addHeader("Content-Type", "application/json")
+
+        val response = Http(request).either()
+
+        response match {
+          case Right(resp) if resp.getStatusCode == 200 => {
+
+            val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
+            val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
+
+            items.map(printHistoryItem)
+          }
+          case Right(resp) => {
+            println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for ${project}${Console.WHITE}")
+          }
+          case Left(throwable) => {
+            println(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for ${project}${Console.WHITE}")
+          }
+        }
+      }
+    }
+  }
+
+  private def printHistoryItem(item: RiffRaffHistoryItem) {
+    val status = item.status match {
+      case "Completed" => f"${Console.GREEN}Completed${Console.WHITE}"
+      case "Running" => f"${Console.YELLOW}Running${Console.WHITE}"
+      case "Failed" => f"${Console.RED}Failed${Console.WHITE}"
+      case "Not running" => f"${Console.MAGENTA}Waiting${Console.WHITE}"
+      case unknown => unknown
+    }
+
+    println(f"${item.projectName}%-25s ${status}%-25s ${item.deployer}%-20s")
+  }
+
+  private def promptForAction(message: String): Option[Boolean] = {
+    print(s"\n$message (y/n) ")
+
+    val userInput = io.Source.stdin.getLines.next
+    println()
+    userInput match {
+      case "y" => Some(true)
+      case _ => None
+    }
   }
 }
 
@@ -97,6 +175,12 @@ object DeployCommand {
     "sport",
     "archive"
   )
+
+  val projectsExcludedFromCode = List(
+    "preview"
+  )
+
+  lazy val allCodeProjectNames = allProjectNames.filterNot(projectsExcludedFromCode.toSet)
 }
 
 class ListCommand() extends Command {
@@ -113,3 +197,16 @@ class ListCommand() extends Command {
 
   }
 }
+
+case class RiffRaffHistoryItem(
+  time: String,
+  uuid: String,
+  projectName: String,
+  build: String,
+  stage: String,
+  deployer: String,
+  recipe: String,
+  status: String,
+  logURL: String)
+
+
