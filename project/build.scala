@@ -1,5 +1,7 @@
 import sbt._
 import sbt.Keys._
+import com.typesafe.sbt.SbtNativePackager._
+import NativePackagerKeys._
 
 object GooTool extends Build {
 
@@ -39,6 +41,7 @@ object GooTool extends Build {
         "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots"),
       libraryDependencies += "com.gu" %% "frontend-goo-tool" % gooVersion
     )
+    .settings(packageArchetype.java_application:_*)
 
   lazy val gooDevBuild = Project("dev-build", file("."))
     .dependsOn(gooTool)
