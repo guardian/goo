@@ -196,6 +196,19 @@ For safety reasons, the tool does not permit deletion of PROD stacks. Please do 
 
     Can not delete PROD stacks
 
+Why is running goo so slow?
+---------------------------
+
+Historically, the platform tool was manually updated. This led to developers using different versions, or getting in trouble 
+with some external package dependencies. Goo seeks to auto-update dependencies on startup, using sbt.
+
+A simple way to workaround the slow startup is to skip sbt, and the dependency update. This means the user is responsible
+for keeping the package up-to-date. It's simple to do:
+
+1. Run [sbt](./sbt), and then `project goo-client` from the sbt prompt.
+2. Run `stage`, which will create a standalone Java application.
+3. Use the generated bash script [goo-client](client/target/universal/stage/bin/goo-client) to execute commands, eg. `./goo-client groups list`
+
 Development
 -----------
 
