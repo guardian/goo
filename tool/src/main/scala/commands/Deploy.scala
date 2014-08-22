@@ -35,7 +35,7 @@ class DeployCommand() extends Command with Stage {
       response <- promptForAction("Are you sure you want to Deploy?")
       key <- Config.riffRaffKey
       stage <- getStage()
-      project <- if (stage=="PROD") namesSpec.intersect(DeployCommand.allProjectNames) else nameSpec
+      project <- if (stage=="PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
       if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
     } {
       val deploy = Seq(
