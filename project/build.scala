@@ -1,7 +1,6 @@
 import sbt._
 import sbt.Keys._
 import com.typesafe.sbt.SbtNativePackager._
-import NativePackagerKeys._
 
 object GooTool extends Build {
 
@@ -18,7 +17,17 @@ object GooTool extends Build {
         "org.yaml" % "snakeyaml" % "1.13",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "com.typesafe.play" %% "play-json" % "2.3.2",
-        "org.slf4j" % "slf4j-simple" % "1.6.2"
+        "org.slf4j" % "slf4j-simple" % "1.6.2",
+
+//        "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
+//        "com.typesafe.play" %% "play-json" % "2.3.0",
+        "org.eclipse.jetty" % "jetty-server" % "9.2.2.v20140723",
+        "org.eclipse.jetty" % "jetty-webapp" % "9.2.2.v20140723",
+        "org.scalatra" % "scalatra_2.11" % "2.3.0",
+//        "com.amazonaws" % "aws-java-sdk" % "1.7.1",
+        "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.1.0",
+        "com.typesafe.scala-logging" % "scala-logging-slf4j_2.11" % "2.1.2",
+        "ch.qos.logback" % "logback-classic" % "1.0.3"
       ),
       resolvers := Seq(
         Classpaths.typesafeResolver,
