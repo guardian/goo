@@ -109,9 +109,7 @@ object AWSLocalStore extends LazyLogging {
       accessKeyId <- tokens.get("aws_access_key_id");
       secretKey <- tokens.get("aws_secret_access_key");
       sessionToken <- tokens.get("aws_session_token")
-    ) yield {
-      AWSCredentials(accessKeyId, secretKey, sessionToken)
-    }
+    ) yield AWSCredentials(accessKeyId, secretKey, sessionToken)
   }
 
   def getProps: Option[Map[String, String]] = {
