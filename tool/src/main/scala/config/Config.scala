@@ -6,8 +6,8 @@ import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 import java.util.{Map => JavaMap}
 import collection.mutable.{Map => MutableMap}
-import collection.JavaConversions.mapAsScalaMap
 import scala.util.control.Exception.allCatch
+import scala.collection.JavaConversions._
 
 object Config {
 
@@ -36,22 +36,23 @@ object Config {
     }
 
   private def getFogConfig(group: String): Option[Map[String, String]] = {
-    val fileConfig = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog") match {
-      case Right(fogConfig) =>
-        val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, String]]]))
-        val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String, String]]]
-        fogConfig.close()
-        Some(mapAsScalaMap(map))
-      case Left(e) =>
-        println(s"Failed to load ~/.fog configuration")
-        None
-    }
+    val fileConfig: Option[Map[String, Map[String, String]]] =
+      allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog") match {
+        case Right(fogConfig) =>
+          val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, String]]]))
+          val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String, String]]].toMap
+            .map {case (k,v)=> k->v.toMap}
+          fogConfig.close()
+          Some(map)
+        case Left(e) =>
+          println(s"Failed to load ~/.fog configuration")
+          None
+      }
 
     for {
       config <- fileConfig
       parsedMap <- config.get(group)
-      default: MutableMap[String, String] <- Some(mapAsScalaMap(parsedMap))
-    } yield default.toMap
+    } yield parsedMap
   }
 }
 
