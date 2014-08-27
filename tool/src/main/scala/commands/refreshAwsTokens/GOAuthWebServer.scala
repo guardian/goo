@@ -32,7 +32,7 @@ object GOAuthWebServer {
       userEmail <- getLocalAccessToken flatMap retrieveUserEmail;
       jwt <- obtainJwtFromAuthorisationCode(authorizationCode)
     ) yield {
-      logger.info(s"Google credentials obtained ($jwt, $userEmail)")
+      logger.debug(s"Google credentials obtained ($jwt, $userEmail)")
       GoogleCredentials(jwt, userEmail)
     }
   }
@@ -51,7 +51,7 @@ object GOAuthWebServer {
 
     val authorizationCode: String = Await.result(AuthorisationCodeListener.authenticationCode.future, Config.gOAuth.timeout)
     storeAuthorisationCode(authorizationCode)
-    logger.info(s"Authorization code obtained: $authorizationCode")
+    logger.debug(s"Authorization code obtained: $authorizationCode")
     authorizationCode
   }
 
@@ -90,7 +90,7 @@ object GOAuthWebServer {
           response =>
             (Json.parse(response) \ "access_token").asOpt[String] match {
               case Some(accessToken) =>
-                logger.info(s"New access token obtained $accessToken")
+                logger.debug(s"New access token obtained $accessToken")
                 storeAccessToken(accessToken)
                 Success(accessToken)
               case _ =>
