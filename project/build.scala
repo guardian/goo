@@ -18,9 +18,7 @@ object GooTool extends Build {
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "com.typesafe.play" %% "play-json" % "2.3.2",
         "org.slf4j" % "slf4j-simple" % "1.6.2",
-        "org.eclipse.jetty" % "jetty-server" % "9.2.2.v20140723",
-        "org.eclipse.jetty" % "jetty-webapp" % "9.2.2.v20140723",
-        "org.scalatra" % "scalatra_2.11" % "2.3.0"
+        "org.eclipse.jetty" % "jetty-webapp" % "9.2.2.v20140723"
       ),
       resolvers := Seq(
         Classpaths.typesafeResolver,

@@ -1,15 +1,11 @@
 package commands.refreshAwsTokens
 
-import javax.servlet.ServletContext
-
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.DefaultServlet
-import org.eclipse.jetty.webapp.WebAppContext
-import org.scalatra._
-import org.scalatra.servlet.ScalatraListener
+import org.eclipse.jetty.servlet.{ServletHolder, ServletHandler}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
 object AuthorisationCodeListener {
 
@@ -21,14 +17,29 @@ object AuthorisationCodeListener {
 
     // spawn a web server on a new thread
     Future {
-      val context = new WebAppContext()
-      context setContextPath "/"
-      context.setResourceBase("src/main/webapp")
-      context.setInitParameter(ScalatraListener.LifeCycleKey, classOf[ScalatraBootstrap].getCanonicalName)
-      context.addEventListener(new ScalatraListener)
-      context.addServlet(classOf[DefaultServlet], "/")
-      context.setAttribute(promiseInstanceKey, promisedAuthorisationCode)
-      server.setHandler(context)
+      val handler: ServletHandler = new ServletHandler()
+      handler.addServletWithMapping(new ServletHolder(new HttpServlet() {
+        override protected def doGet(req: HttpServletRequest, resp: HttpServletResponse) {
+          val code: String = req.getParameter("code")
+          Future {
+            // this will cause the server to stop, so deferring the completion to allow for response to be sent
+            promisedAuthorisationCode.success(code)
+          }
+          resp.setContentType("text/html")
+          resp.getWriter.println(
+            <span>
+              <p>Authorization code retrieved:
+                {code}
+              </p>
+              <p>
+                <b>You may close this window.</b>
+              </p>
+              <p>Thank you</p>
+            </span>.toString())
+        }
+      }), "/*")
+      server.setHandler(handler)
+
       server.start()
       println("server started")
       server.join()
@@ -41,38 +52,11 @@ object AuthorisationCodeListener {
         promisedAuthorisationCode.failure(new TimeoutException(msg))
     }
 
-    promisedAuthorisationCode.future.onComplete { x =>
+    promisedAuthorisationCode.future.onComplete(_ => {
       server.stop()
       println("Authorisation code listener stopped")
-    }
+    })
 
     promisedAuthorisationCode
-  }
-}
-
-class ScalatraBootstrap extends LifeCycle {
-  override def init(context: ServletContext) {
-    context.mount(new ScalatraServlet {
-      get(Config.gOAuth.callbackUri) {
-        val code = params("code")
-        Future {
-          Thread.sleep(100)
-          context.getAttribute(AuthorisationCodeListener.promiseInstanceKey) match {
-            case p: Promise[String] => p.success(code)
-            case _ => println("Missing promise in servlet context")
-          }
-        }
-
-        <span>
-          <p>Authorization code retrieved:
-            {code}
-          </p>
-          <p>
-            <b>You may close this window.</b>
-          </p>
-          <p>Thank you</p>
-        </span>
-      }
-    }, "/*")
   }
 }

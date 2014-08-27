@@ -5,12 +5,12 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.identitymanagement.model.{GetRoleRequest, UpdateAssumeRolePolicyRequest}
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest
-import org.scalatra.util.RicherString
 import play.api.libs.json.{JsValue, Json}
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 import java.io.{FileOutputStream, File}
+import java.net.URLDecoder
 
 case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: String) extends AWSSessionCredentials {
   override def getSessionToken: String = sessionToken
@@ -20,10 +20,12 @@ case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: 
   override def getAWSAccessKeyId: String = accessKeyId
 }
 
-object AwsSts  {
+object AwsSts {
+
   import Logging._
+
   def assumeRole(jsonWebToken: String, userEmail: String): Option[AWSCredentials] =
-    Try(new AWSSecurityTokenServiceClient().assumeRoleWithWebIdentity(
+    Try(new AWSSecurityTokenServiceClient(AWSCredentials("", "", "")).assumeRoleWithWebIdentity(
       new AssumeRoleWithWebIdentityRequest()
         .withRoleArn(Config.Aws.roleArn)
         .withRoleSessionName(userEmail)
@@ -53,6 +55,7 @@ object AwsSts  {
 }
 
 object AwsIam {
+
   import Logging._
 
   type Email = String
@@ -63,7 +66,7 @@ object AwsIam {
         new GetRoleRequest().withRoleName(Config.Aws.roleName))
         .getRole
         .getAssumeRolePolicyDocument
-  }.map(new RicherString(_).urlDecode)
+  }.map(URLDecoder.decode(_, "utf8"))
     .map(Json.parse)
 
   def grantUserAccessToFederatedRole(email: Email) {
@@ -105,6 +108,7 @@ object AwsIam {
 }
 
 object AWSLocalStore {
+
   import Logging._
 
   private val file = new File(Config.Aws.credentialsLocation)
@@ -127,8 +131,8 @@ object AWSLocalStore {
       .getLines()
       .filter(_.contains("="))
       .map {
-        x => val y = x.split("=")
-          (y(0), y(1))
-      })
+      x => val y = x.split("=")
+        (y(0), y(1))
+    })
   }
 }
