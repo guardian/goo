@@ -10,7 +10,6 @@ import play.api.libs.json.{JsValue, Json}
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
-import com.typesafe.scalalogging.LazyLogging
 import java.io.{FileOutputStream, File}
 
 case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: String) extends AWSSessionCredentials {
@@ -21,7 +20,8 @@ case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: 
   override def getAWSAccessKeyId: String = accessKeyId
 }
 
-object AwsSts extends LazyLogging {
+object AwsSts  {
+  import Logging._
   def assumeRole(jsonWebToken: String, userEmail: String): Option[AWSCredentials] =
     Try(new AWSSecurityTokenServiceClient().assumeRoleWithWebIdentity(
       new AssumeRoleWithWebIdentityRequest()
@@ -52,7 +52,9 @@ object AwsSts extends LazyLogging {
   }
 }
 
-object AwsIam extends LazyLogging {
+object AwsIam {
+  import Logging._
+
   type Email = String
 
   def getExistingPolicy: Option[JsValue] = createClient.map {
@@ -102,7 +104,9 @@ object AwsIam extends LazyLogging {
   }
 }
 
-object AWSLocalStore extends LazyLogging {
+object AWSLocalStore {
+  import Logging._
+
   private val file = new File(Config.Aws.credentialsLocation)
 
   def readCredentials: Option[AWSCredentials] = getProps flatMap {

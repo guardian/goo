@@ -12,16 +12,15 @@ import scala.io.Source
 import scala.language.postfixOps
 import scala.reflect.io.{Directory, File}
 import scala.util.{Failure, Success, Try}
-import com.typesafe.scalalogging.LazyLogging
 import com.amazonaws.services.cloudfront.model.InvalidArgumentException
 
 case class GoogleCredentials(jsonWebToken: String, // used for 3rd party service authorisation
                              userEmail: String)
 
-object GOAuthWebServer extends LazyLogging {
-
+object GOAuthWebServer {
   import GAuthLocalStore._
   import HttpUtils._
+  import Logging._
 
   private val secureEndpoint: Req = host("accounts.google.com").secure / "o" / "oauth2"
 
