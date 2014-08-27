@@ -12,9 +12,8 @@ import goo.{Config, Command, GooSubCommandHandler}
 class Ec2Command() extends Command {
 
   @Argument(handler = classOf[GooSubCommandHandler])
-  @SubCommands(value = Array(
-    new SubCommand(name = "list", impl = classOf[ListCommand])))
-  private val cmd: Command = null;
+  @SubCommands(value = Array(new SubCommand(name = "list", impl = classOf[ListCommand])))
+  private val cmd: Command = null
 
   override def executeImpl() {
     if (cmd != null) {
@@ -51,8 +50,8 @@ class ListCommand() extends Command {
       val instances = getInstances(client).map ( instance => {
 
         Ec2Instance(
-          instance.getTags().find(_.getKey() == "Stage").map(_.getValue).getOrElse("-"),
-          instance.getTags().find(_.getKey() == "Role").map(_.getValue).getOrElse("-"),
+          instance.getTags.find(_.getKey == "Stage").map(_.getValue).getOrElse("-"),
+          instance.getTags.find(_.getKey == "Role").map(_.getValue).getOrElse("-"),
           instance.getState.getName,
           instance.getInstanceId,
           instance.getPublicDnsName)
@@ -83,14 +82,13 @@ class ListCommand() extends Command {
 
   private def getInstances(client: AmazonEC2Client): List[Instance] = {
 
-    val result = allCatch either client.describeInstances().getReservations().flatMap(_.getInstances).toList
+    val result = allCatch either client.describeInstances().getReservations.flatMap(_.getInstances).toList
 
     result match {
       case Right(list) => list
-      case Left(ex) => {
+      case Left(ex) =>
         println(s"Error: ${ex.getMessage}")
         Nil
-      }
     }
   }
 }

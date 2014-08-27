@@ -24,7 +24,7 @@ class GroupsCommand() extends Command {
   @SubCommands(value = Array(
     new SubCommand(name = "list", impl = classOf[ListCommand]),
     new SubCommand(name = "update", impl = classOf[UpdateCommand])))
-  private val cmd: Command = null;
+  private val cmd: Command = null
 }
 
 object GroupsCommand {
