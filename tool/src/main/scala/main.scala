@@ -18,7 +18,7 @@ object GooCommand {
     val gooCommand = new GooCommand()
 
     allCatch either gooCommand.parser.parseArgument(args.toList) match {
-      case Right(x) => {
+      case Right(x) =>
         if (gooCommand.doPrintUsage || gooCommand.cmd == null){
           println("Goo subcommands:")
           println("\t groups (list|update)")
@@ -26,13 +26,11 @@ object GooCommand {
           println("\t deploy (list)")
           println("\t ec2 list")
         } else {
-          gooCommand.cmd.execute();
+          gooCommand.cmd.execute()
         }
-      }
-      case Left(e) => {
+      case Left(e) =>
         println(e.getMessage)
         gooCommand.parser.printSingleLineUsage(System.out)
-      }
     }
   }
 }
@@ -50,5 +48,5 @@ class GooCommand() {
     new SubCommand(name = "cloudformation", impl = classOf[CloudFormationCommand]),
     new SubCommand(name = "deploy", impl = classOf[DeployCommand]),
     new SubCommand(name = "ec2", impl = classOf[Ec2Command])))
-  private val cmd: Command = null;
+  private val cmd: Command = null
 }
