@@ -7,7 +7,6 @@ import org.yaml.snakeyaml.constructor.Constructor
 import java.util.{Map => JavaMap}
 import collection.mutable.{Map => MutableMap}
 import collection.JavaConversions.mapAsScalaMap
-import scala.reflect.BeanProperty
 import scala.util.control.Exception.allCatch
 
 object Config {
@@ -25,26 +24,19 @@ object Config {
       x => new AWSCredentialsProviderChain(new StaticCredentialsProvider(x))
     }
 
-  lazy val riffRaffKey: Option[String] = {
-
-    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.riffraff")
-
-    result match {
-      case Right(config) => {
+  lazy val riffRaffKey: Option[String] =
+    allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.riffraff") match {
+      case Right(config) =>
         val key = config.mkString.trim
         config.close()
         Some(key)
-      }
-      case Left(e) => {
+      case Left(e) =>
         println(s"Failed to load ~/.riffraff key file. Go to riffraff to get your API key and write it into the key file.")
         None
-      }
     }
-  }
 
   private def getFogConfig(group: String): Option[Map[String, String]] = {
-    val result = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog")
-    val fileConfig = result match {
+    val fileConfig = allCatch either scala.io.Source.fromFile(System.getProperty("user.home") + "/.fog") match {
       case Right(fogConfig) =>
         val yaml = new Yaml(new Constructor(classOf[JavaMap[String, JavaMap[String, String]]]))
         val map = yaml.load(fogConfig.mkString).asInstanceOf[JavaMap[String, JavaMap[String, String]]]
