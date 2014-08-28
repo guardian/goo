@@ -20,7 +20,7 @@ object GooCommand {
 
     allCatch either gooCommand.parser.parseArgument(args.toList) match {
       case Right(x) =>
-        if (gooCommand.doPrintUsage || gooCommand.cmd == null){
+        if (gooCommand.doPrintUsage || gooCommand.cmd == null) {
           println("Goo subcommands:")
           println("\t groups (list|update)")
           println("\t cloudformation (up|update|destroy)")

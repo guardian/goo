@@ -11,7 +11,7 @@ trait Command {
 
   def printUsage() {
     parser.printUsage(System.out)
-    println
+    println()
   }
 
   def execute() = {
@@ -41,14 +41,13 @@ trait Stage {
   @Option(name = "--prod", metaVar = "PROD stage", usage = "deploy to PROD stage")
   private val prod: Boolean = false
 
-  protected def getStage() = {
+  protected def getStage = {
     (code, prod) match {
       case (true, false) => Some("CODE")
       case (false, true) => Some("PROD")
-      case _ => {
+      case _ =>
         println("Invalid stage: Specify one of --code or --prod.")
         None
-      }
     }
   }
 }
@@ -61,7 +60,6 @@ trait StackName {
   protected lazy val templateFilename = stackName + ".json"
 }
 
-
 class GooSubCommandHandler(parser: CmdLineParser, option: OptionDef, setter: Setter[AnyRef])
   extends SubCommandHandler(parser: CmdLineParser, option: OptionDef, setter: Setter[AnyRef]) {
 
@@ -73,6 +71,6 @@ class GooSubCommandHandler(parser: CmdLineParser, option: OptionDef, setter: Set
       command.setParser(parser)
     }
 
-    return parser
+    parser
   }
 }
