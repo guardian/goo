@@ -18,8 +18,8 @@ class DevPermissionsCommand extends Command {
         case "grant" => AwsIam.grantUserAccessToFederatedRole(email)
         case "revoke" => AwsIam.revokeUserAccessToFederatedRole(email)
         case "list" => AwsIam.listEmails.map(println)
-        case _ => println("Canceled. Allowed permission operations: (grant|revoke)")
+        case _ => println("Cancelled. Allowed permission operations: (grant|revoke)")
       }
-    else println(s"Canceled. Invalid email: $email")
+    else println(s"Cancelled. Invalid email: $email")
   }
 }
