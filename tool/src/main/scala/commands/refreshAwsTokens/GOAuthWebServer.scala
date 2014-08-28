@@ -1,5 +1,6 @@
 package commands.refreshAwsTokens
 
+import goo.Config
 import java.io
 
 import dispatch._

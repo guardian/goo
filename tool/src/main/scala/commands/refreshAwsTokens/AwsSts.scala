@@ -5,6 +5,7 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.identitymanagement.model.{GetRoleRequest, UpdateAssumeRolePolicyRequest}
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest
+import goo.Config
 import play.api.libs.json.{JsValue, Json}
 import scala.io.Source
 import scala.language.postfixOps

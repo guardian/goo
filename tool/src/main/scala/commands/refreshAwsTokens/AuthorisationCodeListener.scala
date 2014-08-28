@@ -1,5 +1,6 @@
 package commands.refreshAwsTokens
 
+import goo.Config
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.{ServletHolder, ServletHandler}
 
