@@ -24,8 +24,9 @@ object AwsSts {
 
   import Logging._
 
-  def assumeRole(jsonWebToken: String, userEmail: String): Option[AWSCredentials] =
-    Try(new AWSSecurityTokenServiceClient(AWSCredentials("", "", "")).assumeRoleWithWebIdentity(
+  def assumeRole(jsonWebToken: String, userEmail: String): Option[AWSCredentials] = {
+    val client = new AWSSecurityTokenServiceClient(AWSCredentials("", "", ""))
+    val credentials: Option[AWSCredentials] = Try(client.assumeRoleWithWebIdentity(
       new AssumeRoleWithWebIdentityRequest()
         .withRoleArn(Config.Aws.roleArn)
         .withRoleSessionName(userEmail)
@@ -39,6 +40,9 @@ object AwsSts {
         logger.error("Error assuming role", e)
         None
     }
+    client.shutdown()
+    credentials
+  }
 
   def storeCredentials(ac: AWSCredentials) {
     val fileTpl: String = s"[nextgen]\n" +
@@ -60,32 +64,43 @@ object AwsIam {
 
   type Email = String
 
-  def getExistingPolicy: Option[JsValue] = createClient.map {
-    client =>
-      client.getRole(
-        new GetRoleRequest().withRoleName(Config.Aws.roleName))
-        .getRole
-        .getAssumeRolePolicyDocument
-  }.map(URLDecoder.decode(_, "utf8"))
-    .map(Json.parse)
+  def listEmails: List[Email] = {
+    getExistingPolicy.fold(List[Email]())(getEmailsFromRolePolicy)
+  }
 
   def grantUserAccessToFederatedRole(email: Email) {
-    val existingEmails = getExistingPolicy.fold(List[Email]())(getEmailsFromRolePolicy)
+    val existingEmails = listEmails
     if (!existingEmails.contains(email))
       updateAssumeRolePolicyDocument(generateRolePolicyDocument(existingEmails union List(email)))
+    else
+      logger.info("Policy already contained the given email.")
   }
 
   def revokeUserAccessToFederatedRole(email: Email) {
-    val existingEmails = getExistingPolicy.fold(List[Email]())(getEmailsFromRolePolicy)
+    val existingEmails = listEmails
     if (existingEmails.contains(email))
       updateAssumeRolePolicyDocument(generateRolePolicyDocument(existingEmails diff List(email)))
+    else
+      logger.info("Policy did not contain the given email.")
   }
+
+  private def getExistingPolicy: Option[JsValue] = createClient.map {
+    client =>
+      val policy = client.getRole(
+        new GetRoleRequest().withRoleName(Config.Aws.roleName))
+        .getRole
+        .getAssumeRolePolicyDocument
+      client.shutdown()
+      policy
+  }.map(URLDecoder.decode(_, "utf8"))
+    .map(Json.parse)
 
   private def generateRolePolicyDocument(emails: List[Email]): String = {
     def policyDocumentTpl(content: String) = s"""{"Version":"2012-10-17","Statement":[$content]}"""
     def emailPolicyTpl(email: Email) = s"""{"Sid":"","Effect":"Allow","Principal":{"Federated":"accounts.google.com"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringLike":{"accounts.google.com:email":"$email"},"StringEquals":{"accounts.google.com:aud":"${Config.gOAuth.clientId}"}}}"""
-
-    policyDocumentTpl(emails map emailPolicyTpl mkString ",")
+    val newPolicy: String = policyDocumentTpl(emails map emailPolicyTpl mkString ",")
+    logger.debug(s"New policy:\n$newPolicy")
+    newPolicy
   }
 
   private def createClient: Option[AmazonIdentityManagementClient] = AWSLocalStore.readCredentials.map(new AmazonIdentityManagementClient(_))
@@ -95,6 +110,7 @@ object AwsIam {
 
   private def updateAssumeRolePolicyDocument(policy: String) = createClient.map {
     client =>
+      logger.debug("Updating IAM policy")
       Try(client.updateAssumeRolePolicy(
         new UpdateAssumeRolePolicyRequest()
           .withRoleName(Config.Aws.roleName)
@@ -103,7 +119,9 @@ object AwsIam {
         case Failure(e) =>
           logger.error(s"Error updating policy\n$policy", e)
         case _ =>
+          logger.info("Policy successfully updated")
       }
+      client.shutdown()
   }
 }
 
