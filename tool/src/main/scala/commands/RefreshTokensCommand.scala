@@ -3,7 +3,7 @@ package commands
 import goo.Command
 import commands.refreshAwsTokens.{Logging, GOAuthWebServer, AwsSts}
 
-class RefreshAwsTokens() extends Command {
+class RefreshTokensCommand() extends Command {
 
   import Logging._
 
@@ -14,6 +14,7 @@ class RefreshAwsTokens() extends Command {
       ac <- AwsSts.assumeRole(gc.jsonWebToken, gc.userEmail)
     ) yield {
       logger.debug(s"Updating AWS Credentials with $ac")
+      logger.info("AWS credentials updated")
       AwsSts.storeCredentials(ac)
     }
   }

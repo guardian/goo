@@ -10,7 +10,7 @@ import goo.groups.GroupsCommand
 import goo.deploy.DeployCommand
 import goo.cloudformation.CloudFormationCommand
 import goo.ec2.Ec2Command
-import commands.RefreshAwsTokens
+import commands.RefreshTokensCommand
 
 object GooCommand {
 
@@ -50,6 +50,6 @@ class GooCommand() {
     new SubCommand(name = "cloudformation", impl = classOf[CloudFormationCommand]),
     new SubCommand(name = "deploy", impl = classOf[DeployCommand]),
     new SubCommand(name = "ec2", impl = classOf[Ec2Command]),
-    new SubCommand(name = "refresh-tokens", impl = classOf[RefreshAwsTokens])))
+    new SubCommand(name = "refresh-tokens", impl = classOf[RefreshTokensCommand])))
   private val cmd: Command = null
 }
