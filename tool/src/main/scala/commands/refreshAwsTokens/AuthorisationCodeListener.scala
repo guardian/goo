@@ -8,6 +8,7 @@ import scala.concurrent._
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
 object AuthorisationCodeListener {
+  import commands.refreshAwsTokens.Logging._
 
   val promiseInstanceKey: String = "promisedResult"
 
@@ -54,7 +55,7 @@ object AuthorisationCodeListener {
 
     promisedAuthorisationCode.future.onComplete(_ => {
       server.stop()
-      println("Authorisation code listener stopped")
+      logger.debug("Authorisation code listener stopped")
     })
 
     promisedAuthorisationCode
