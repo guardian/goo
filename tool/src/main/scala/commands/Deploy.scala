@@ -193,15 +193,14 @@ class ListCommand() extends Command {
   }
 }
 
-case class RiffRaffHistoryItem(
-                                time: String,
-                                uuid: String,
-                                projectName: String,
-                                build: String,
-                                stage: String,
-                                deployer: String,
-                                recipe: String,
-                                status: String,
-                                logURL: String)
+case class RiffRaffHistoryItem(time: String,
+                               uuid: String,
+                               projectName: String,
+                               build: String,
+                               stage: String,
+                               deployer: String,
+                               recipe: String,
+                               status: String,
+                               logURL: String)
 
 

@@ -19,7 +19,7 @@ class CloudFormationCommand() extends Command {
     new SubCommand(name = "update", impl = classOf[UpdateCommand]),
     new SubCommand(name = "up", impl = classOf[UpCommand]),
     new SubCommand(name = "destroy", impl = classOf[DestroyCommand])))
-  private val cmd: Command = null;
+  private val cmd: Command = null
 
   override def executeImpl() {
     if (cmd != null) {
@@ -52,12 +52,10 @@ object CloudFormation {
 
     val result = allCatch either client.putObject("aws-cloudformation", objectKey, file)
     result match {
-      case Right(x) => {
+      case Right(x) =>
         println(s"Uploaded template from: $file")
-      }
-      case Left(e) => {
+      case Left(e) =>
         println(s"Exception uploading template: ${e.getMessage}")
-      }
     }
     result
   }
@@ -67,10 +65,9 @@ object CloudFormation {
     val result = allCatch either client.describeStacks()
     result match {
       case Right(x) => Right(x.getStacks.toList)
-      case Left(e) => {
+      case Left(e) =>
         println(s"Exception describing stacks: ${e.getMessage}")
         Left(e)
-      }
     }
   }
 
@@ -141,12 +138,10 @@ class UpCommand() extends Command with Stage with StackName {
 
       val result = allCatch either client.createStack(request)
       result match {
-        case Right(x) => {
+        case Right(x) =>
           println("Create Stack Request sent successfully.")
-        }
-        case Left(e) => {
+        case Left(e) =>
           println(s"Exception creating stack: ${e.getMessage}")
-        }
       }
 
       client.shutdown()
@@ -175,12 +170,10 @@ class DestroyCommand() extends Command with Stage with StackName {
 
         val result = allCatch either client.deleteStack(request)
         result match {
-          case Right(x) => {
+          case Right(x) =>
             println("Delete Stack Request sent successfully.")
-          }
-          case Left(e) => {
+          case Left(e) =>
             println(s"Exception deleting stack: ${e.getMessage}")
-          }
         }
       }
 
