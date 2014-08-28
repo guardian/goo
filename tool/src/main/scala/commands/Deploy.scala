@@ -16,9 +16,8 @@ class DeployCommand() extends Command with Stage {
   private def namesSpec = names.split(",")
 
   @Argument(handler = classOf[GooSubCommandHandler])
-  @SubCommands(value = Array(
-    new SubCommand(name = "list", impl = classOf[ListCommand])))
-  private val cmd: Command = null;
+  @SubCommands(value = Array(new SubCommand(name = "list", impl = classOf[ListCommand])))
+  private val cmd: Command = null
 
   override def executeImpl() {
     if (cmd != null) {
@@ -56,14 +55,12 @@ class DeployCommand() extends Command with Stage {
       response match {
         case Right(resp) if resp.getStatusCode == 200 => {
           val logUrl = Json.parse(resp.getResponseBody) \ "response" \ "logURL"
-          println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString}")
+          println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString()}")
         }
-        case Right(resp) => {
+        case Right(resp) =>
           println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Deploy failed for ${project}${Console.WHITE}")
-        }
-        case Left(throwable) => {
+        case Left(throwable) =>
           println(s"${Console.RED}${throwable.getMessage} Deploy exception for ${project}${Console.WHITE}")
-        }
       }
     }
 
@@ -93,7 +90,7 @@ class DeployCommand() extends Command with Stage {
           .secure
           .GET
           .addQueryParameter("key", key)
-          .addQueryParameter("projectName", s"frontend::${project}")
+          .addQueryParameter("projectName", s"frontend::$project")
           .addQueryParameter("stage", stage)
           .addQueryParameter("pageSize", "1")
           .addHeader("Content-Type", "application/json")
@@ -101,19 +98,16 @@ class DeployCommand() extends Command with Stage {
         val response = Http(request).either()
 
         response match {
-          case Right(resp) if resp.getStatusCode == 200 => {
+          case Right(resp) if resp.getStatusCode == 200 =>
 
             val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
             val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
 
             items.map(printHistoryItem)
-          }
-          case Right(resp) => {
+          case Right(resp) =>
             println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for ${project}${Console.WHITE}")
-          }
-          case Left(throwable) => {
+          case Left(throwable) =>
             println(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for ${project}${Console.WHITE}")
-          }
         }
       }
     }
