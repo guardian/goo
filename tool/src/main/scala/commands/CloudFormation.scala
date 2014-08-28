@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import scala.util.control.Exception.allCatch
 import collection.JavaConversions._
 
-import goo.{Config, Command, Stage, StackName, FogAWSCredentials, GooSubCommandHandler}
+import goo.{Config, Command, Stage, StackName, GooSubCommandHandler}
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
 import com.amazonaws.services.cloudformation.model._
@@ -87,7 +87,7 @@ class UpdateCommand() extends Command with Stage with StackName {
   override def executeImpl() {
 
     for {
-      stage <- getStage()
+      stage <- getStage
       s3client <- CloudFormation.s3Client
       client <- CloudFormation.cloudFormationClient
       result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
@@ -124,7 +124,7 @@ class UpCommand() extends Command with Stage with StackName {
   override def executeImpl() {
 
     for {
-      stage <- getStage()
+      stage <- getStage
       s3client <- CloudFormation.s3Client
       client <- CloudFormation.cloudFormationClient
       result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
@@ -160,7 +160,7 @@ class DestroyCommand() extends Command with Stage with StackName {
   override def executeImpl() {
 
     for {
-      stage <- getStage()
+      stage <- getStage
       client <- CloudFormation.cloudFormationClient
       stackShortName <- Some(s"${stackName}-${stage}")
       describeResult <- CloudFormation.describeStacks(client).right

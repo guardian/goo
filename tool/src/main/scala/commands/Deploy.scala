@@ -10,8 +10,9 @@ import goo.{Command, Stage, Config, GooSubCommandHandler}
 
 class DeployCommand() extends Command with Stage {
 
-  @option(name = "-n", aliases = Array("--name"),  metaVar = "names", usage = "specifies the projects to deploy")
+  @option(name = "-n", aliases = Array("--name"), metaVar = "names", usage = "specifies the projects to deploy")
   private val names: String = DeployCommand.defaultDeployProjectNames.mkString(",")
+
   private def namesSpec = names.split(",")
 
   @Argument(handler = classOf[GooSubCommandHandler])
@@ -34,14 +35,14 @@ class DeployCommand() extends Command with Stage {
     for {
       response <- promptForAction("Are you sure you want to Deploy?")
       key <- Config.riffRaffKey
-      stage <- getStage()
-      project <- if (stage=="PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
+      stage <- getStage
+      project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
       if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
     } {
       val deploy = Seq(
         "project" -> JsString(s"frontend::${project}"),
-        "build"   -> JsString("lastSuccessful"),
-        "stage"   -> JsString(stage.toUpperCase))
+        "build" -> JsString("lastSuccessful"),
+        "stage" -> JsString(stage.toUpperCase))
 
       val request = url("https://riffraff.gutools.co.uk/api/deploy/request")
         .secure
@@ -92,9 +93,9 @@ class DeployCommand() extends Command with Stage {
           .secure
           .GET
           .addQueryParameter("key", key)
-          .addQueryParameter("projectName",s"frontend::${project}")
-          .addQueryParameter("stage",stage)
-          .addQueryParameter("pageSize","1")
+          .addQueryParameter("projectName", s"frontend::${project}")
+          .addQueryParameter("stage", stage)
+          .addQueryParameter("pageSize", "1")
           .addHeader("Content-Type", "application/json")
 
         val response = Http(request).either()
@@ -199,14 +200,14 @@ class ListCommand() extends Command {
 }
 
 case class RiffRaffHistoryItem(
-  time: String,
-  uuid: String,
-  projectName: String,
-  build: String,
-  stage: String,
-  deployer: String,
-  recipe: String,
-  status: String,
-  logURL: String)
+                                time: String,
+                                uuid: String,
+                                projectName: String,
+                                build: String,
+                                stage: String,
+                                deployer: String,
+                                recipe: String,
+                                status: String,
+                                logURL: String)
 
 
