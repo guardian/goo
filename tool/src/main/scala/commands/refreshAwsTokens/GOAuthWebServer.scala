@@ -26,13 +26,10 @@ object GOAuthWebServer {
   private val secureEndpoint: Req = host("accounts.google.com").secure / "o" / "oauth2"
 
   def retrieveCredentials: Option[GoogleCredentials] = {
-    val authorizationCode = //getLocalAuthorisationCode getOrElse
-      obtainAuthorisationCode
-
-    for (
-      userEmail <- getLocalAccessToken flatMap retrieveUserEmail;
-      jwt <- obtainJwtFromAuthorisationCode(authorizationCode)
-    ) yield {
+    for {
+      jwt <- obtainJwtFromAuthorisationCode(obtainAuthorisationCode)
+      userEmail <- getLocalAccessToken flatMap retrieveUserEmail
+    } yield {
       logger.debug(s"Google credentials obtained ($jwt, $userEmail)")
       GoogleCredentials(jwt, userEmail)
     }
@@ -44,7 +41,6 @@ object GOAuthWebServer {
       .addQueryParameter("client_id", Config.gOAuth.clientId)
       .addQueryParameter("redirect_uri", Config.gOAuth.redirectUrl)
       .addQueryParameter("scope", "https://www.googleapis.com/auth/userinfo.email")
-      //      .addQueryParameter("scope", "email openid")
       .addQueryParameter("access_type", "offline")
       .addQueryParameter("approval_prompt", "auto")
       .addQueryParameter("login_hint", "email")
