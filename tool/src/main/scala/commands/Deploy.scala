@@ -1,12 +1,12 @@
 package goo.deploy
 
-import org.kohsuke.args4j.{Argument, Option => option}
-import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import dispatch._
-import scala.concurrent.ExecutionContext.Implicits.global
+import goo.{Command, Config, GooSubCommandHandler, Stage}
+import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
+import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
 
-import goo.{Command, Stage, Config, GooSubCommandHandler}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class DeployCommand() extends Command with Stage {
 
@@ -53,10 +53,9 @@ class DeployCommand() extends Command with Stage {
       val response = Http(request).either()
 
       response match {
-        case Right(resp) if resp.getStatusCode == 200 => {
+        case Right(resp) if resp.getStatusCode == 200 =>
           val logUrl = Json.parse(resp.getResponseBody) \ "response" \ "logURL"
           println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString()}")
-        }
         case Right(resp) =>
           println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Deploy failed for ${project}${Console.WHITE}")
         case Left(throwable) =>
@@ -99,7 +98,6 @@ class DeployCommand() extends Command with Stage {
 
         response match {
           case Right(resp) if resp.getStatusCode == 200 =>
-
             val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
             val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
 
