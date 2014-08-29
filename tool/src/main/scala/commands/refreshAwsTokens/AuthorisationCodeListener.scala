@@ -1,14 +1,16 @@
 package commands.refreshAwsTokens
 
+import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
+
 import goo.Config
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.{ServletHolder, ServletHandler}
+import org.eclipse.jetty.servlet.{ServletHandler, ServletHolder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import javax.servlet.http.{HttpServletResponse, HttpServletRequest, HttpServlet}
 
 object AuthorisationCodeListener {
+
   import commands.refreshAwsTokens.Logging._
 
   val promiseInstanceKey: String = "promisedResult"
@@ -54,10 +56,10 @@ object AuthorisationCodeListener {
         promisedAuthorisationCode.failure(new TimeoutException(msg))
     }
 
-    promisedAuthorisationCode.future.onComplete(_ => {
+    promisedAuthorisationCode.future.onComplete { _ =>
       server.stop()
       logger.debug("Authorisation code listener stopped")
-    })
+    }
 
     promisedAuthorisationCode
   }

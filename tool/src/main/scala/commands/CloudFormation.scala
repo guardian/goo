@@ -1,16 +1,17 @@
 package goo.cloudformation
 
-import org.kohsuke.args4j.Argument
-import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import java.io.File
-import com.amazonaws.services.s3.AmazonS3Client
-import scala.util.control.Exception.allCatch
-import collection.JavaConversions._
 
-import goo.{Config, Command, Stage, StackName, GooSubCommandHandler}
-import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
 import com.amazonaws.services.cloudformation.model._
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.PutObjectResult
+import goo.{Command, Config, GooSubCommandHandler, StackName, Stage}
+import org.kohsuke.args4j.Argument
+import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
+
+import scala.collection.JavaConversions._
+import scala.util.control.Exception.allCatch
 
 class CloudFormationCommand() extends Command {
 
@@ -138,10 +139,8 @@ class UpCommand() extends Command with Stage with StackName {
 
       val result = allCatch either client.createStack(request)
       result match {
-        case Right(x) =>
-          println("Create Stack Request sent successfully.")
-        case Left(e) =>
-          println(s"Exception creating stack: ${e.getMessage}")
+        case Right(x) => println("Create Stack Request sent successfully.")
+        case Left(e) => println(s"Exception creating stack: ${e.getMessage}")
       }
 
       client.shutdown()
