@@ -1,6 +1,6 @@
 package commands.refreshAwsTokens
 
-import java.io.{File, FileOutputStream}
+import java.io.FileOutputStream
 import java.net.URLDecoder
 
 import com.amazonaws.auth.AWSSessionCredentials
@@ -130,28 +130,23 @@ object AWSLocalStore {
 
   import commands.refreshAwsTokens.Logging._
 
-  private val file = new File(Config.Aws.credentialsLocation)
-
-  def readCredentials: Option[AWSCredentials] = getProps flatMap {
-    tokens =>
-      logger.debug(tokens.get("aws_access_key_id").mkString("\n"))
-
-      for (
-        accessKeyId <- tokens.get("aws_access_key_id");
-        secretKey <- tokens.get("aws_secret_access_key");
-        sessionToken <- tokens.get("aws_session_token")
-      ) yield AWSCredentials(accessKeyId, secretKey, sessionToken)
+  def readCredentials: Option[AWSCredentials] = {
+    val tokens = getProps
+    for {
+      accessKeyId <- tokens.get("aws_access_key_id")
+      secretKey <- tokens.get("aws_secret_access_key")
+      sessionToken <- tokens.get("aws_session_token")
+    } yield AWSCredentials(accessKeyId, secretKey, sessionToken)
   }
 
-  def getProps: Option[Map[String, String]] = {
-    val content: String = if (file.exists()) Source.fromFile(file).mkString else ""
-    if (content.isEmpty) None
-    else Some(Map() ++ Source.fromFile(file)
-      .getLines()
-      .filter(_.contains("="))
-      .map {
-      x => val y = x.split("=")
-        (y(0), y(1))
-    })
+  private def getProps: Map[String, String] = Try(Source.fromFile(Config.Aws.credentialsLocation).getLines()) match {
+    case Success(content) =>
+      content.filter(_.contains("=")).map {
+        x => val y = x.split("=")
+          y(0).trim -> y(1).trim
+      }.toMap
+    case Failure(e) =>
+      logger.warn(s"Error reading '${Config.Aws.credentialsLocation}'", e)
+      Map()
   }
 }
