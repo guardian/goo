@@ -1,8 +1,8 @@
 package commands
 
+import commands.refreshAwsTokens.AwsIam
 import goo.Command
 import org.kohsuke.args4j.Argument
-import commands.refreshAwsTokens.AwsIam
 
 class DevPermissionsCommand extends Command {
   @Argument(multiValued = false, metaVar = "permission operation (grant|revoke)", usage = "(grant|revoke)", required = true, index = 0)
@@ -13,13 +13,13 @@ class DevPermissionsCommand extends Command {
 
   override def executeImpl() {
     val validEmail: Boolean = """([\w\.]+)@([\w\.]+)""".r.unapplySeq(email).isDefined
-    if (operation == "list" || validEmail)
-      operation match {
-        case "grant" => AwsIam.grantUserAccessToFederatedRole(email)
-        case "revoke" => AwsIam.revokeUserAccessToFederatedRole(email)
-        case "list" => AwsIam.listEmails.map(println)
-        case _ => println("Cancelled. Allowed permission operations: (grant|revoke)")
-      }
-    else println(s"Cancelled. Invalid email: $email")
+    operation match {
+      case "grant" if validEmail => AwsIam.grantUserAccessToFederatedRole(email)
+      case "revoke" if validEmail => AwsIam.revokeUserAccessToFederatedRole(email)
+      case "list" => AwsIam.listEmails.map(println)
+      case _ =>
+        if(email.nonEmpty && !validEmail) println(s"Cancelled. Invalid email: $email")
+        else println("Cancelled. Allowed permission operations: (grant|revoke|list)")
+    }
   }
 }
