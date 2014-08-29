@@ -1,15 +1,19 @@
 package commands.refreshAwsTokens
 
 import java.io
+import java.util.concurrent.TimeoutException
+import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.amazonaws.services.cloudfront.model.InvalidArgumentException
 import dispatch._
 import goo.Config
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.{ServletHandler, ServletHolder}
 import play.api.libs.json.Json
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
 import scala.io.Source
 import scala.language.postfixOps
 import scala.reflect.io.{Directory, File}
@@ -46,7 +50,7 @@ object GOAuthWebServer {
       .addQueryParameter("login_hint", "email")
       .toRequest.getUrl)
 
-    val authorizationCode: String = Await.result(AuthorisationCodeListener.authenticationCode.future, Config.gOAuth.timeout)
+    val authorizationCode: String = Await.result(AuthorisationCodeListener.authenticationCode, Config.gOAuth.timeout)
     storeAuthorisationCode(authorizationCode)
     logger.debug(s"Authorization code obtained: $authorizationCode")
     authorizationCode
@@ -155,4 +159,58 @@ object GAuthLocalStore {
   }
 
   private def readProperty(refreshTokenProp: String): Option[String] = getTokens.get(refreshTokenProp)
+}
+
+object AuthorisationCodeListener {
+
+  import commands.refreshAwsTokens.Logging._
+
+  val promiseInstanceKey: String = "promisedResult"
+
+  def authenticationCode: Future[String] = {
+    val promisedAuthorisationCode = Promise[String]()
+    val server = new Server(Config.gOAuth.port)
+    server.setHandler(new ServletHandler(){
+      addServletWithMapping(new ServletHolder(new HttpServlet() {
+        override protected def doGet(req: HttpServletRequest, resp: HttpServletResponse) {
+          val code: String = req.getParameter("code")
+          resp.setContentType("text/html")
+          resp.getWriter.println(
+            <span>
+              <p>Authorization code retrieved:
+                {code}
+              </p>
+              <p>
+                <b>You may close this window.</b>
+              </p>
+              <p>Thank you</p>
+            </span>.toString())
+          Future {
+            // this will cause the server to stop, so deferring the completion to allow for response to be sent
+            promisedAuthorisationCode.success(code)
+          }
+        }
+      }), "/*")
+    })
+    server.start()
+    logger.debug("server started")
+    // spawn a web server on a new thread
+    Future {
+      server.join()
+    }
+    // wait for a certain amount of time for user to authenticate
+    Future {
+      Thread.sleep(Config.gOAuth.timeout.toMillis - 100)
+      val msg = s"Authentication code was not received within ${Config.gOAuth.timeout.toSeconds} seconds"
+      if (!promisedAuthorisationCode.isCompleted)
+        promisedAuthorisationCode.failure(new TimeoutException(msg))
+    }
+
+    promisedAuthorisationCode.future.onComplete { _ =>
+      server.stop()
+      logger.debug("Authorisation code listener stopped")
+    }
+
+    promisedAuthorisationCode.future
+  }
 }
