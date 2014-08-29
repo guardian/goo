@@ -1,9 +1,10 @@
 package commands.refreshAwsTokens
 
-import goo.Config
 import java.io
 
+import com.amazonaws.services.cloudfront.model.InvalidArgumentException
 import dispatch._
+import goo.Config
 import play.api.libs.json.Json
 
 import scala.concurrent.Await
@@ -13,15 +14,14 @@ import scala.io.Source
 import scala.language.postfixOps
 import scala.reflect.io.{Directory, File}
 import scala.util.{Failure, Success, Try}
-import com.amazonaws.services.cloudfront.model.InvalidArgumentException
 
 case class GoogleCredentials(jsonWebToken: String, // used for 3rd party service authorisation
                              userEmail: String)
 
 object GOAuthWebServer {
-  import GAuthLocalStore._
-  import HttpUtils._
-  import Logging._
+  import commands.refreshAwsTokens.GAuthLocalStore._
+  import commands.refreshAwsTokens.HttpUtils._
+  import commands.refreshAwsTokens.Logging._
 
   private val secureEndpoint: Req = host("accounts.google.com").secure / "o" / "oauth2"
 
@@ -148,15 +148,15 @@ object GAuthLocalStore {
       storagePath / "src/main" createDirectory()
       storagePath.createFile()
     }
-    file.writeAll(Json.toJson(getTokens.getOrElse(Map()) + (name -> value)).toString())
+    file.writeAll(Json.toJson(getTokens + (name -> value)).toString())
   }
 
-  private def getTokens: Option[Map[String, String]] = {
+  private def getTokens: Map[String, String] = {
     val file: io.File = storagePath.jfile
     val content: String = if (file.exists()) Source.fromFile(file).mkString else ""
-    if (content.isEmpty) None else Json.parse(content).asOpt[Map[String, String]]
+    (if (content.isEmpty) None else Json.parse(content).asOpt[Map[String, String]])
+      .getOrElse(Map())
   }
 
-  private def readProperty(refreshTokenProp: String): Option[String] =
-    (for (tokens <- getTokens) yield tokens.get(refreshTokenProp)).flatten
+  private def readProperty(refreshTokenProp: String): Option[String] = getTokens.get(refreshTokenProp)
 }
