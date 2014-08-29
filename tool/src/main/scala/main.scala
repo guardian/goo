@@ -1,16 +1,15 @@
 package goo
 
-import org.kohsuke.args4j.{Argument, CmdLineParser, Option}
+import commands.aws.{DevPermissionsCommand, RefreshTokensCommand}
+import goo.cloudformation.CloudFormationCommand
+import goo.deploy.DeployCommand
+import goo.ec2.Ec2Command
+import goo.groups.GroupsCommand
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
+import org.kohsuke.args4j.{Argument, CmdLineParser, Option}
 
 import scala.collection.JavaConversions._
 import scala.util.control.Exception.allCatch
-
-import goo.groups.GroupsCommand
-import goo.deploy.DeployCommand
-import goo.cloudformation.CloudFormationCommand
-import goo.ec2.Ec2Command
-import commands.{DevPermissionsCommand, RefreshTokensCommand}
 
 object GooCommand {
 

@@ -1,6 +1,6 @@
-package commands
+package commands.aws
 
-import commands.refreshAwsTokens.{AwsSts, GOAuthWebServer, Logging}
+import commands.refreshAwsTokens.{AwsSts, GOAuthWebServer}
 import goo.Command
 
 class RefreshTokensCommand() extends Command {

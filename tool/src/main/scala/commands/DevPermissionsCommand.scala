@@ -1,4 +1,4 @@
-package commands
+package commands.aws
 
 import commands.refreshAwsTokens.AwsIam
 import goo.Command

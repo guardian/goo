@@ -75,7 +75,7 @@ class DeployCommand() extends Command with Stage {
       stage <- List("CODE", "PROD")
     } {
 
-      println(s"\n$stage status:\n");
+      println(s"\n$stage status:\n")
 
       val projects = stage match {
         case "CODE" => DeployCommand.allCodeProjectNames
