@@ -1,5 +1,8 @@
 package commands.refreshAwsTokens
 
+import java.io.{File, FileOutputStream}
+import java.net.URLDecoder
+
 import com.amazonaws.auth.AWSSessionCredentials
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.identitymanagement.model.{GetRoleRequest, UpdateAssumeRolePolicyRequest}
@@ -7,11 +10,10 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest
 import goo.Config
 import play.api.libs.json.{JsValue, Json}
+
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
-import java.io.{FileOutputStream, File}
-import java.net.URLDecoder
 
 case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: String) extends AWSSessionCredentials {
   override def getSessionToken: String = sessionToken
@@ -23,7 +25,7 @@ case class AWSCredentials(accessKeyId: String, secretKey: String, sessionToken: 
 
 object AwsSts {
 
-  import Logging._
+  import commands.refreshAwsTokens.Logging._
 
   def assumeRole(jsonWebToken: String, userEmail: String): Option[AWSCredentials] = {
     val client = new AWSSecurityTokenServiceClient(AWSCredentials("", "", ""))
@@ -61,23 +63,21 @@ object AwsSts {
 
 object AwsIam {
 
-  import Logging._
+  import commands.refreshAwsTokens.Logging._
 
-  type Email = String
-
-  def listEmails: List[Email] = {
-    getExistingPolicy.fold(List[Email]())(getEmailsFromRolePolicy)
+  def listEmails: List[String] = {
+    getExistingPolicy.fold(List[String]())(getEmailsFromRolePolicy)
   }
 
-  def grantUserAccessToFederatedRole(email: Email) {
+  def grantUserAccessToFederatedRole(email: String) {
     val existingEmails = listEmails
     if (!existingEmails.contains(email))
-      updateAssumeRolePolicyDocument(generateRolePolicyDocument(existingEmails union List(email)))
+      updateAssumeRolePolicyDocument(generateRolePolicyDocument(email :: existingEmails))
     else
       logger.info("Policy already contained the given email.")
   }
 
-  def revokeUserAccessToFederatedRole(email: Email) {
+  def revokeUserAccessToFederatedRole(email: String) {
     val existingEmails = listEmails
     if (existingEmails.contains(email))
       updateAssumeRolePolicyDocument(generateRolePolicyDocument(existingEmails diff List(email)))
@@ -96,9 +96,9 @@ object AwsIam {
   }.map(URLDecoder.decode(_, "utf8"))
     .map(Json.parse)
 
-  private def generateRolePolicyDocument(emails: List[Email]): String = {
+  private def generateRolePolicyDocument(emails: List[String]): String = {
     def policyDocumentTpl(content: String) = s"""{"Version":"2012-10-17","Statement":[$content]}"""
-    def emailPolicyTpl(email: Email) = s"""{"Sid":"","Effect":"Allow","Principal":{"Federated":"accounts.google.com"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringLike":{"accounts.google.com:email":"$email"},"StringEquals":{"accounts.google.com:aud":"${Config.gOAuth.clientId}"}}}"""
+    def emailPolicyTpl(email: String) = s"""{"Sid":"","Effect":"Allow","Principal":{"Federated":"accounts.google.com"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringLike":{"accounts.google.com:email":"$email"},"StringEquals":{"accounts.google.com:aud":"${Config.gOAuth.clientId}"}}}"""
     val newPolicy: String = policyDocumentTpl(emails map emailPolicyTpl mkString ",")
     logger.debug(s"New policy:\n$newPolicy")
     newPolicy
@@ -106,8 +106,8 @@ object AwsIam {
 
   private def createClient: Option[AmazonIdentityManagementClient] = AWSLocalStore.readCredentials.map(new AmazonIdentityManagementClient(_))
 
-  private def getEmailsFromRolePolicy(policy: JsValue): List[Email] =
-    (policy \\ "accounts.google.com:email").flatMap(_.asOpt[Email]).toList
+  private def getEmailsFromRolePolicy(policy: JsValue): List[String] =
+    (policy \\ "accounts.google.com:email").flatMap(_.asOpt[String]).toList
 
   private def updateAssumeRolePolicyDocument(policy: String) = createClient.map {
     client =>
@@ -128,7 +128,7 @@ object AwsIam {
 
 object AWSLocalStore {
 
-  import Logging._
+  import commands.refreshAwsTokens.Logging._
 
   private val file = new File(Config.Aws.credentialsLocation)
 
