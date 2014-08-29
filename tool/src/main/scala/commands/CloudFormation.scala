@@ -53,10 +53,8 @@ object CloudFormation {
 
     val result = allCatch either client.putObject("aws-cloudformation", objectKey, file)
     result match {
-      case Right(x) =>
-        println(s"Uploaded template from: $file")
-      case Left(e) =>
-        println(s"Exception uploading template: ${e.getMessage}")
+      case Right(x) => println(s"Uploaded template from: $file")
+      case Left(e) => println(s"Exception uploading template: ${e.getMessage}")
     }
     result
   }
@@ -103,12 +101,8 @@ class UpdateCommand() extends Command with Stage with StackName {
 
       val result = allCatch either client.updateStack(request)
       result match {
-        case Right(x) => {
-          println("Update Stack Request sent successfully.")
-        }
-        case Left(e) => {
-          println(s"Exception updating stack: ${e.getMessage}")
-        }
+        case Right(x) => println("Update Stack Request sent successfully.")
+        case Left(e) => println(s"Exception updating stack: ${e.getMessage}")
       }
 
       client.shutdown()
@@ -169,10 +163,8 @@ class DestroyCommand() extends Command with Stage with StackName {
 
         val result = allCatch either client.deleteStack(request)
         result match {
-          case Right(x) =>
-            println("Delete Stack Request sent successfully.")
-          case Left(e) =>
-            println(s"Exception deleting stack: ${e.getMessage}")
+          case Right(x) => println("Delete Stack Request sent successfully.")
+          case Left(e) => println(s"Exception deleting stack: ${e.getMessage}")
         }
       }
 
