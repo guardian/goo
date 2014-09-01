@@ -1,6 +1,6 @@
 package commands.aws
 
-import commands.refreshAwsTokens.{AwsSts, GOAuthWebServer}
+import commands.refreshAwsTokens.{AwsSts, GOAuthWebServer, GooSessionCredentials}
 import goo.Command
 
 class RefreshTokensCommand() extends Command {
@@ -10,12 +10,12 @@ class RefreshTokensCommand() extends Command {
   override def executeImpl() {
     logger.info("Refreshing AWS tokens")
     for {
-      gc <- GOAuthWebServer.retrieveCredentials
-      ac <- AwsSts.assumeRole(gc.jsonWebToken, gc.userEmail)
+      googleCredentials <- GOAuthWebServer.retrieveCredentials
+      awsCredentials <- AwsSts.assumeRole(googleCredentials.jsonWebToken, googleCredentials.userEmail)
     } yield {
-      logger.debug(s"Updating AWS Credentials with $ac")
+      logger.debug(s"Updating AWS Credentials with $awsCredentials")
+      AwsSts.storeCredentials(GooSessionCredentials.nextgenProfile, awsCredentials)
       logger.info("AWS credentials updated")
-      AwsSts.storeCredentials(ac)
     }
   }
 }

@@ -5,10 +5,10 @@ import goo.Command
 import org.kohsuke.args4j.Argument
 
 class DevPermissionsCommand extends Command {
-  @Argument(multiValued = false, metaVar = "permission operation (grant|revoke)", usage = "(grant|revoke)", required = true, index = 0)
+  @Argument(multiValued = false, metaVar = "permission operation (grant|revoke|list)", required = true, index = 0)
   private val operation: String = ""
 
-  @Argument(multiValued = false, metaVar = "developer email", usage = "Guardian email address", required = false, index = 1)
+  @Argument(multiValued = false, metaVar = "developer email", required = false, index = 1)
   private val email: String = ""
 
   override def executeImpl() {

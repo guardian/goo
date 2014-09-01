@@ -1,6 +1,6 @@
-import sbt._
-import sbt.Keys._
 import com.typesafe.sbt.SbtNativePackager._
+import sbt.Keys._
+import sbt._
 
 object GooTool extends Build {
 
@@ -13,7 +13,7 @@ object GooTool extends Build {
       version  := gooVersion,
       libraryDependencies ++= Seq(
         "args4j" % "args4j" % "2.0.26",
-        "com.amazonaws" % "aws-java-sdk" % "1.7.1",
+        "com.amazonaws" % "aws-java-sdk" % "1.8.9.1",
         "org.yaml" % "snakeyaml" % "1.13",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "com.typesafe.play" %% "play-json" % "2.3.2",
