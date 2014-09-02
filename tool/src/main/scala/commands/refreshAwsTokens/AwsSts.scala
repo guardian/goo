@@ -27,7 +27,7 @@ case class GooSessionCredentials(accessKeyId: String, secretKey: String, session
 object GooSessionCredentials {
   val emptyCredentials = new GooSessionCredentials("", "", "")
   val nextgenProfile = "nextgen"
-  val adminProfile = "nextgen" // this will have to be changed to reflect the actual profile that holds admin rights
+  val adminProfile = "nextgen-admin"
 }
 
 object AwsSts {
