@@ -27,8 +27,12 @@ A fog configuration file. Make a file `~/.fog` and ensure it has the contents:
     default:
       aws_access_key_id: _YOUR_KEY_
       aws_secret_access_key: _YOUR_SECRET_
-      region: 'eu-west-1'  
-        
+      region: 'eu-west-1'
+    
+    teamcity:
+      username: 'YOUR_USERNAME'
+      password: 'YOUR_PASSWORD'           
+       
 A riff-raff key file. Make a file `~/.riffraff` and ensure it has the contents:
 
     _YOUR_KEY_ 

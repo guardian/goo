@@ -5,7 +5,7 @@ import sbt._
 object GooTool extends Build {
 
   // It should always be a snapshot because Sbt will always run update on snapshots.
-  val gooVersion = "3.4-SNAPSHOT"
+  val gooVersion = "4.1-SNAPSHOT"
 
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(

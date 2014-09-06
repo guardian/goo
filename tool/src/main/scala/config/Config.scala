@@ -30,6 +30,16 @@ object Config {
     val credentialsLocation = System.getProperty("user.home") + "/.aws/credentials"
   }
 
+  object teamcity {
+    lazy val credentials: BasicAuthCredentials = getFogConfig("teamcity").flatMap{ config =>
+      for (
+        username <- config.get("username");
+        password <- config.get("password")
+      ) yield BasicAuthCredentials(username, password)
+
+    }.getOrElse(throw new RuntimeException("Teamcity credentials not configured see the README"))
+  }
+
   lazy val cloudformationHome = new java.io.File(System.getProperty("user.dir") + "/../cloudformation").getCanonicalPath
 
   lazy val awsUserCredentials: Option[AWSCredentialsProviderChain] =
@@ -80,3 +90,5 @@ class FogAWSCredentials(accessKeyId: String, secretKey: String) extends AWSCrede
 
   def getAWSSecretKey: String = secretKey
 }
+
+case class BasicAuthCredentials(username: String, password: String)

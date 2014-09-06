@@ -7,6 +7,7 @@ import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.xml.XML
 
 class DeployCommand() extends Command with Stage {
 
@@ -29,10 +30,11 @@ class DeployCommand() extends Command with Stage {
 
   private def deploy() {
 
+    printBuildStatus()
     printFrontendStackStatus()
 
     for {
-      response <- promptForAction("Are you sure you want to Deploy?")
+      response <- promptForAction(s"Are you sure you want to Deploy? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
       key <- Config.riffRaffKey
       stage <- getStage
       project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
@@ -66,6 +68,36 @@ class DeployCommand() extends Command with Stage {
     Http.shutdown()
   }
 
+  private def printBuildStatus(): Unit = {
+    case class Build(description: String, id: String)
+
+    val buildsWeCareAbout = Seq(
+      Build("Next Gen 'root'", "bt1304")
+    )
+
+    println(s"\n${Console.BLUE}Build status:\n")
+
+    val credentials = Config.teamcity.credentials
+
+    for (build <- buildsWeCareAbout) {
+
+      val request = url(s"http://teamcity.guprod.gnm/httpAuth/app/rest/buildTypes/id:${build.id}/builds?count=1")
+      .GET
+      .as(credentials.username, credentials.password)
+
+      Http(request).either() match {
+        case Right(response) if response.getStatusCode == 200 =>
+          printStatus((XML.loadString(response.getResponseBody) \\ "build" \ "@status").toString())
+        case Left(a) => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status")
+      }
+
+      def printStatus(status: String) = status match {
+        case "SUCCESS" => println(f"${Console.WHITE}${build.description}%-25s${Console.GREEN}SUCCESS")
+        case other => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}$other")
+      }
+    }
+  }
+
   private def printFrontendStackStatus() {
 
     implicit val readsHistoryItem = Json.reads[RiffRaffHistoryItem]
@@ -75,7 +107,7 @@ class DeployCommand() extends Command with Stage {
       stage <- List("CODE", "PROD")
     } {
 
-      println(s"\n$stage status:\n")
+      println(s"\n${Console.BLUE}$stage deploy status:\n")
 
       val projects = stage match {
         case "CODE" => DeployCommand.allCodeProjectNames
@@ -120,7 +152,7 @@ class DeployCommand() extends Command with Stage {
       case unknown => unknown
     }
 
-    println(f"${item.projectName}%-25s ${status}%-25s ${item.deployer}%-20s")
+    println(f"${Console.WHITE}${item.projectName}%-25s ${status}%-25s ${item.deployer}%-20s")
   }
 
   private def promptForAction(message: String): Option[Boolean] = {
