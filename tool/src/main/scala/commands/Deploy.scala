@@ -71,23 +71,22 @@ class DeployCommand() extends Command with Stage {
   private def printBuildStatus(): Unit = {
     case class Build(description: String, id: String)
 
+    // NOTE: you have to enable the status widget in Teamcity for any build you add here
     val buildsWeCareAbout = Seq(
       Build("Next Gen 'root'", "bt1304")
     )
 
     println(s"\n${Console.BLUE}Build status:\n")
 
-    val credentials = Config.teamcity.credentials
-
     for (build <- buildsWeCareAbout) {
 
-      val request = url(s"http://teamcity.guprod.gnm/httpAuth/app/rest/buildTypes/id:${build.id}/builds?count=1")
-      .GET
-      .as(credentials.username, credentials.password)
+      // even though there are API endpoints we can use, I have gone with simply comparing the HTML widget
+      // this way we avoid developers having to configure or share Teamcity credentials
+      val request = url(s"https://teamcity.gutools.co.uk/externalStatus.html?js=1&buildTypeId=${build.id}")
 
       Http(request).either() match {
         case Right(response) if response.getStatusCode == 200 =>
-          printStatus((XML.loadString(response.getResponseBody) \\ "build" \ "@status").toString())
+          if (response.getResponseBody.contains("success.png")) printStatus("SUCCESS") else printStatus("FAILED")
         case Left(a) => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status")
       }
 
