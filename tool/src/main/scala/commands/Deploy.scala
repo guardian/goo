@@ -92,10 +92,12 @@ class DeployCommand() extends Command with Stage {
 
       def printStatus(status: String) = status match {
         case "SUCCESS" => println(f"${Console.WHITE}${build.description}%-25s${Console.GREEN}SUCCESS")
-        case other => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}$other")
+        case other => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}${blink(other)}")
       }
     }
   }
+
+  private def blink(msg: String) = s"${Console.BLINK}${Console.BOLD}$msg${Console.RESET}"
 
   private def printFrontendStackStatus() {
 
@@ -146,7 +148,7 @@ class DeployCommand() extends Command with Stage {
     val status = item.status match {
       case "Completed" => f"${Console.GREEN}Completed${Console.WHITE}"
       case "Running" => f"${Console.YELLOW}Running${Console.WHITE}"
-      case "Failed" => f"${Console.RED}Failed${Console.WHITE}"
+      case "Failed" => f"${Console.RED}${blink("FAILED")}${Console.WHITE}"
       case "Not running" => f"${Console.MAGENTA}Waiting${Console.WHITE}"
       case unknown => unknown
     }
