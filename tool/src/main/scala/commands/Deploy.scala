@@ -73,7 +73,8 @@ class DeployCommand() extends Command with Stage {
 
     // NOTE: you have to enable the status widget in Teamcity for any build you add here
     val buildsWeCareAbout = Seq(
-      Build("Next Gen 'root'", "bt1304")
+      Build("Next Gen 'root'", "bt1304"),
+      Build("Integration tests", "Frontend_IntegrationTests")
     )
 
     println(s"\n${Console.BLUE}Build status:\n")
