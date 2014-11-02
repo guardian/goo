@@ -248,7 +248,7 @@ This is the process to publish a new version. Note that a version number is not 
     [This will publish artifacts to ~/guardian.github.com, which is expected to be the local location of the Guardian artifact repository.]
 0. In ~/guardian.github.com: `git add` published artifacts to git repo.
 0. From guardian.github.com directory, `./update-directory-index.sh`
-0. In ~/guardian.github.com: `commit` and `push` published artifacts to git repo.
+0. In ~/guardian.github.com: `git commit` and `git push` published artifacts to git repo.
 0. Merge change into platform repo.
 
 Version Numbering
