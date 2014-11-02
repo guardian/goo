@@ -60,12 +60,12 @@ class LogsCommand() extends Command {
 
     for (client <- Fastly.s3Client if validDirectory) {
       implicit val s3client = client
-      listObjects(logNameFilter).map(getObject(_))
+      listObjects(logNameFilter).map(getObject)
       s3client.shutdown()
     }
   }
 
-  private def getObject(key: String)(implicit client: AmazonS3Client): Unit = {
+  private def getObject(key: String)(implicit client: AmazonS3Client) {
     println(s"Downloading $key")
 
     val outputFile = new File(outputDir, key)
@@ -85,7 +85,7 @@ class LogsCommand() extends Command {
   private def listObjects(filter: String)(implicit client: AmazonS3Client): List[String] = {
 
     val result = allCatch either client.listObjects(bucketName, s"fastly/$serviceName/$filter")
-      .getObjectSummaries().map(_.getKey)
+      .getObjectSummaries.map(_.getKey)
 
     result match {
       case Right(list) => list.toList

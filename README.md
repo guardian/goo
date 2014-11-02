@@ -196,6 +196,16 @@ For safety reasons, the tool does not permit deletion of PROD stacks. Please do 
 
     Can not delete PROD stacks
 
+###Fastly
+
+####`fastly logs`
+
+Downloads the fastly logs to a local directory.
+
+`./goo fastly logs 2014-11-02T18:1 Downloads/logs beta.theguardian.com` returns:
+
+    Downloading fastly/beta.theguardian.com/2014-11-02T18:37:00.000-ghfSz8LOa6_R_0IAAAAA.log
+
 Why is running goo so slow?
 ---------------------------
 
