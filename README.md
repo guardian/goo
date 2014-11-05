@@ -200,11 +200,21 @@ For safety reasons, the tool does not permit deletion of PROD stacks. Please do 
 
 ####`fastly logs`
 
-Downloads the fastly logs to a local directory.
+Downloads the fastly logs to a local directory. You can optionally define a service, like 'beta.theguardian.com'. The default service is 'www.theguardian.com'.
 
 `./goo fastly logs 2014-11-02T18:1 Downloads/logs beta.theguardian.com` returns:
 
     Downloading fastly/beta.theguardian.com/2014-11-02T18:37:00.000-ghfSz8LOa6_R_0IAAAAA.log
+
+####`fastly ls`
+
+Lists the fastly logs that have been streamed to the s3 bucket. Again, the default service is 'www.theguardian.com'.
+
+`./goo fastly ls` returns:
+
+    fastly/www.theguardian.com/2014-11-02T19:00:00.000-FOra6ZvOWCaT1BIAAAAA.log
+    fastly/www.theguardian.com/2014-11-02T19:00:00.000-RyJanKHsmK7mGhIAAAAA.log
+    ...
 
 Why is running goo so slow?
 ---------------------------
@@ -216,7 +226,7 @@ A simple way to workaround the slow startup is to skip sbt, and the dependency u
 for keeping the package up-to-date. It's simple to do:
 
 1. Run [sbt](./sbt), and then `project goo-client` from the sbt prompt.
-2. Run `stage`, which will create a standalone Java application.
+2. Run `dist`, which will create a standalone Java application.
 3. Use the generated bash script [goo-client](client/target/universal/stage/bin/goo-client) to execute commands, eg. `./goo-client groups list`
 
 Development

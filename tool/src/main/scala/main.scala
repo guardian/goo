@@ -26,7 +26,7 @@ object GooCommand {
           println("\t cloudformation (up|update|destroy)")
           println("\t deploy (list)")
           println("\t ec2 list")
-          println("\t fastly logs")
+          println("\t fastly (logs|ls)")
           println("\t refresh-tokens")
           println("\t dev-perms")
         } else {

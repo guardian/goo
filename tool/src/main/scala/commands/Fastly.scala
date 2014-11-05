@@ -14,7 +14,8 @@ import goo.{Config, Command, GooSubCommandHandler}
 class FastlyCommand() extends Command {
 
   @Argument(handler = classOf[GooSubCommandHandler])
-  @SubCommands(value = Array(new SubCommand(name = "logs", impl = classOf[LogsCommand])))
+  @SubCommands(value = Array(new SubCommand(name = "logs", impl = classOf[LogsCommand]),
+                             new SubCommand(name = "ls", impl = classOf[LsCommand])))
   private val cmd: Command = null
 
   override def executeImpl() {
@@ -95,3 +96,36 @@ class LogsCommand() extends Command {
     }
   }
 }
+
+class LsCommand() extends Command {
+
+  @Argument(multiValued = false, metaVar = "log name filter", usage = "log name filter", required = false, index = 0)
+  private val logNameFilter: String = ""
+
+  @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 1)
+  private val serviceName: String = "www.theguardian.com"
+
+  private val bucketName = "aws-frontend-logs"
+
+  override def executeImpl() {
+
+    for (client <- Fastly.s3Client) {
+      implicit val s3client = client
+      listObjects(logNameFilter).map(println)
+      s3client.shutdown()
+    }
+  }
+  private def listObjects(filter: String)(implicit client: AmazonS3Client): List[String] = {
+
+    val result = allCatch either client.listObjects(bucketName, s"fastly/$serviceName/$filter")
+      .getObjectSummaries.map(_.getKey)
+
+    result match {
+      case Right(list) => list.toList
+      case Left(ex) =>
+        println(s"Error: ${ex.getMessage}")
+        Nil
+    }
+  }
+}
+
