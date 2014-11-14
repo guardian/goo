@@ -1,7 +1,8 @@
 package commands
 
 import com.amazonaws.AmazonServiceException
-import com.amazonaws.regions.{ServiceAbbreviations, Regions, Region}
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.regions.{Region, Regions, ServiceAbbreviations}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.{GetObjectRequest, ObjectMetadata, PutObjectRequest}
 import com.amazonaws.util.StringInputStream
@@ -14,7 +15,7 @@ object S3 {
   private val endpoint = Region.getRegion(Regions.fromName(Regions.EU_WEST_1.getName)).getServiceEndpoint(ServiceAbbreviations.S3)
 
   lazy val client: AmazonS3Client = {
-    val s3 = new AmazonS3Client()
+    val s3 = new AmazonS3Client(new ProfileCredentialsProvider("nextgen"))
     s3.setEndpoint(endpoint)
     s3
   }
