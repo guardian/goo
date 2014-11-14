@@ -6,7 +6,6 @@ import goo.{Command, Config, GooSubCommandHandler, Stage}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DeployCommand() extends Command with Stage {
