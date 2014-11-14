@@ -1,5 +1,6 @@
 package goo.deploy
 
+import commands.S3
 import dispatch._
 import goo.{Command, Config, GooSubCommandHandler, Stage}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
@@ -7,7 +8,6 @@ import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.xml.XML
 
 class DeployCommand() extends Command with Stage {
 
@@ -17,7 +17,11 @@ class DeployCommand() extends Command with Stage {
   private def namesSpec = names.split(",")
 
   @Argument(handler = classOf[GooSubCommandHandler])
-  @SubCommands(value = Array(new SubCommand(name = "list", impl = classOf[ListCommand])))
+  @SubCommands(value = Array(
+    new SubCommand(name = "list", impl = classOf[ListCommand]),
+    new SubCommand(name = "block", impl = classOf[BlockDeployCommand]),
+    new SubCommand(name = "unblock", impl = classOf[UnblockDeployCommand])
+  ))
   private val cmd: Command = null
 
   override def executeImpl() {
@@ -30,42 +34,53 @@ class DeployCommand() extends Command with Stage {
 
   private def deploy() {
 
-    printBuildStatus()
-    printFrontendStackStatus()
 
-    for {
-      response <- promptForAction(s"Are you sure you want to Deploy? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
-      key <- Config.riffRaffKey
-      stage <- getStage
-      project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
-      if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
-    } {
-      val deploy = Seq(
-        "project" -> JsString(s"frontend::${project}"),
-        "build" -> JsString("lastSuccessful"),
-        "stage" -> JsString(stage.toUpperCase))
+    val blockMessage = S3.get("aws-frontend-devtools", "deploy.lock")
 
-      val request = url("https://riffraff.gutools.co.uk/api/deploy/request")
-        .secure
-        .POST
-        .addQueryParameter("key", key)
-        .addHeader("Content-Type", "application/json")
-        .setBody(JsObject(deploy).toString)
-
-      val response = Http(request).either()
-
-      response match {
-        case Right(resp) if resp.getStatusCode == 200 =>
-          val logUrl = Json.parse(resp.getResponseBody) \ "response" \ "logURL"
-          println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString()}")
-        case Right(resp) =>
-          println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Deploy failed for ${project}${Console.WHITE}")
-        case Left(throwable) =>
-          println(s"${Console.RED}${throwable.getMessage} Deploy exception for ${project}${Console.WHITE}")
-      }
+    blockMessage.foreach{ message =>
+      println(s"\n\n\n${Console.RED} Deploy blocked: ${Console.BLUE}$message")
+      println(s"${Console.BLUE} To clear run: ${Console.WHITE}deploy unblock\n\n")
     }
 
-    Http.shutdown()
+    if (blockMessage.isEmpty) {
+
+      printBuildStatus()
+      printFrontendStackStatus()
+
+      for {
+        response <- promptForAction(s"Are you sure you want to Deploy? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
+        key <- Config.riffRaffKey
+        stage <- getStage
+        project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
+        if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
+      } {
+        val deploy = Seq(
+          "project" -> JsString(s"frontend::${project}"),
+          "build" -> JsString("lastSuccessful"),
+          "stage" -> JsString(stage.toUpperCase))
+
+        val request = url("https://riffraff.gutools.co.uk/api/deploy/request")
+          .secure
+          .POST
+          .addQueryParameter("key", key)
+          .addHeader("Content-Type", "application/json")
+          .setBody(JsObject(deploy).toString)
+
+        val response = Http(request).either()
+
+        response match {
+          case Right(resp) if resp.getStatusCode == 200 =>
+            val logUrl = Json.parse(resp.getResponseBody) \ "response" \ "logURL"
+            println(s"${Console.GREEN}Deploying ${project}${Console.WHITE} - ${logUrl.toString()}")
+          case Right(resp) =>
+            println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Deploy failed for ${project}${Console.WHITE}")
+          case Left(throwable) =>
+            println(s"${Console.RED}${throwable.getMessage} Deploy exception for ${project}${Console.WHITE}")
+        }
+      }
+
+      Http.shutdown()
+    }
   }
 
   private def printBuildStatus(): Unit = {
@@ -224,6 +239,26 @@ class ListCommand() extends Command {
 
   }
 }
+
+class BlockDeployCommand() extends Command {
+
+  @Argument(multiValued = false, metaVar = "lock message", usage = "Message to display when locked", required = true)
+  private val message: String = ""
+
+  override def executeImpl() {
+    S3.put("aws-frontend-devtools", "deploy.lock", message)
+    println(s"${Console.CYAN}Deploy blocked: ${Console.WHITE}$message")
+  }
+}
+
+class UnblockDeployCommand() extends Command {
+
+  override def executeImpl() {
+    S3.delete("aws-frontend-devtools", "deploy.lock")
+    println(s"${Console.CYAN}Deploy unblocked")
+  }
+}
+
 
 case class RiffRaffHistoryItem(time: String,
                                uuid: String,
