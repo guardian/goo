@@ -3,6 +3,7 @@ package goo.deploy
 import commands.S3
 import dispatch._
 import goo.{Command, Config, GooSubCommandHandler, Stage}
+import org.joda.time.DateTime
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
@@ -51,7 +52,7 @@ class DeployCommand() extends Command with Stage {
         key <- Config.riffRaffKey
         stage <- getStage
         project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
-        if (stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project))
+        if stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project)
       } {
         val deploy = Seq(
           "project" -> JsString(s"frontend::${project}"),
@@ -241,12 +242,9 @@ class ListCommand() extends Command {
 
 class BlockDeployCommand() extends Command {
 
-  @Argument(multiValued = false, metaVar = "lock message", usage = "Message to display when locked", required = true)
-  private val message: String = ""
-
   override def executeImpl() {
-    S3.put("aws-frontend-devtools", "deploy.lock", message)
-    println(s"${Console.CYAN}Deploy blocked: ${Console.WHITE}$message")
+    S3.put("aws-frontend-devtools", "deploy.lock", DateTime.now().toString)
+    println(s"${Console.CYAN}Deploy blocked")
   }
 }
 
