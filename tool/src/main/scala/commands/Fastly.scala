@@ -5,7 +5,7 @@ import java.io.File
 import org.kohsuke.args4j.Argument
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.GetObjectRequest
+import com.amazonaws.services.s3.model.{ObjectListing, GetObjectRequest}
 import collection.JavaConversions._
 import scala.util.control.Exception.allCatch
 
@@ -33,6 +33,33 @@ object Fastly {
       new AmazonS3Client(provider)
     }
   }
+
+  val bucketName = "aws-frontend-logs"
+
+  def mapObjects(prefix: String, apply:(String => Unit))(implicit client: AmazonS3Client) {
+
+    def expandObjectListing(listing: ObjectListing): List[String] = {
+
+      val objects = listing.getObjectSummaries.map(_.getKey).toList
+      objects.map(apply)
+
+      if (listing.isTruncated) {
+        objects ++ expandObjectListing(client.listNextBatchOfObjects(listing))
+      } else {
+        Nil
+      }
+    }
+
+    val result = allCatch either {
+      val objectListing = client.listObjects(bucketName, prefix)
+      expandObjectListing(objectListing)
+    }
+
+    result match {
+      case Right(_) => Unit
+      case Left(ex) => println(s"Error: ${ex.getMessage}")
+    }
+  }
 }
 
 class LogsCommand() extends Command {
@@ -45,8 +72,6 @@ class LogsCommand() extends Command {
 
   @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 2)
   private val serviceName: String = "www.theguardian.com"
-
-  private val bucketName = "aws-frontend-logs"
 
   override def executeImpl() {
 
@@ -61,12 +86,12 @@ class LogsCommand() extends Command {
 
     for (client <- Fastly.s3Client if validDirectory) {
       implicit val s3client = client
-      listObjects(logNameFilter).map(getObject)
+      Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", downloadObject)
       s3client.shutdown()
     }
   }
 
-  private def getObject(key: String)(implicit client: AmazonS3Client) {
+  private def downloadObject(key: String)(implicit client: AmazonS3Client) {
     println(s"Downloading $key")
 
     val outputFile = new File(outputDir, key)
@@ -75,24 +100,11 @@ class LogsCommand() extends Command {
       outputFile.delete()
     }
 
-    val result = allCatch either client.getObject(new GetObjectRequest(bucketName, key), outputFile);
+    val result = allCatch either client.getObject(new GetObjectRequest(Fastly.bucketName, key), outputFile);
 
     result match {
       case Left(ex) => println(s"Error: ${ex.getMessage}")
       case _ =>
-    }
-  }
-
-  private def listObjects(filter: String)(implicit client: AmazonS3Client): List[String] = {
-
-    val result = allCatch either client.listObjects(bucketName, s"fastly/$serviceName/$filter")
-      .getObjectSummaries.map(_.getKey)
-
-    result match {
-      case Right(list) => list.toList
-      case Left(ex) =>
-        println(s"Error: ${ex.getMessage}")
-        Nil
     }
   }
 }
@@ -111,20 +123,8 @@ class LsCommand() extends Command {
 
     for (client <- Fastly.s3Client) {
       implicit val s3client = client
-      listObjects(logNameFilter).map(println)
+      Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", println)
       s3client.shutdown()
-    }
-  }
-  private def listObjects(filter: String)(implicit client: AmazonS3Client): List[String] = {
-
-    val result = allCatch either client.listObjects(bucketName, s"fastly/$serviceName/$filter")
-      .getObjectSummaries.map(_.getKey)
-
-    result match {
-      case Right(list) => list.toList
-      case Left(ex) =>
-        println(s"Error: ${ex.getMessage}")
-        Nil
     }
   }
 }
