@@ -19,16 +19,29 @@ updates the next time they use the tool.
 Setup
 -----
 
-For existing users of gu, the setup is identical and no further setup is necessary.
 Users of this tool need the following:
       
-A fog configuration file. Make a file `~/.fog` and ensure it has the contents:
-  
-    default:
-      aws_access_key_id: _YOUR_KEY_
-      aws_secret_access_key: _YOUR_SECRET_
-      region: 'eu-west-1'
+1. `~/.aws/credentials`
+
+Ask your team mate to create you an account and securely send you the access key.  For security you must enable MFA - ask if you're not sure what this means.
+
+```
+[nextgen]
+aws_access_key_id=[YOUR_AWS_ACCESS_KEY]
+aws_secret_access_key=[YOUR_AWS_SECRET_ACCESS_KEY]
+```
+
+2. `~/.aws/config`
+
+Non-credentials information for aws should be stored in the config file, not in credentials. Note the slight syntax change compared to the credentials file.
+
+```
+[profile nextgen]
+region = eu-west-1
+```
        
+3. `~/.riffraff`
+
 A riff-raff key file. Make a file `~/.riffraff` and ensure it has the contents:
 
     _YOUR_KEY_ 
