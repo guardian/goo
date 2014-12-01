@@ -25,12 +25,10 @@ class Ec2Command() extends Command {
 }
 
 object Ec2 {
-  lazy val ec2Client: Option[AmazonEC2Client] = {
-    Config.awsUserCredentials.map { provider =>
-      val client = new AmazonEC2Client(provider)
-      client.setEndpoint("ec2.eu-west-1.amazonaws.com")
-      client
-    }
+  lazy val ec2Client: AmazonEC2Client = {
+    val client = new AmazonEC2Client(Config.awsUserCredentials)
+    client.setEndpoint("ec2.eu-west-1.amazonaws.com")
+    client
   }
 }
 
@@ -46,38 +44,37 @@ class ListCommand() extends Command {
 
   override def executeImpl() {
 
-    for (client <- Ec2.ec2Client) {
-      val instances = getInstances(client).map ( instance => {
+    val instances = getInstances(Ec2.ec2Client).map ( instance => {
 
-        Ec2Instance(
-          instance.getTags.find(_.getKey == "Stage").map(_.getValue).getOrElse("-"),
-          instance.getTags.find(_.getKey == "Role").map(_.getValue).getOrElse("-"),
-          instance.getState.getName,
-          instance.getInstanceId,
-          instance.getPublicDnsName)
-      }).sortBy(_.stage)
+      Ec2Instance(
+        instance.getTags.find(_.getKey == "Stage").map(_.getValue).getOrElse("-"),
+        instance.getTags.find(_.getKey == "Role").map(_.getValue).getOrElse("-"),
+        instance.getState.getName,
+        instance.getInstanceId,
+        instance.getPublicDnsName)
+    }).sortBy(_.stage)
 
-      for (box <- instances) {
+    for (box <- instances) {
 
-        val stage = box.stage match {
-          case "CODE" => f"${Console.MAGENTA}${box.stage}${Console.WHITE}"
-          case "PROD" => f"${Console.CYAN}${box.stage}${Console.WHITE}"
-          case _ => box.stage
-        }
-
-        val state = box.state match {
-          case "running" => f"${Console.GREEN}${box.state}${Console.WHITE}"
-          case "terminated"|
-               "stopped" => f"${Console.RED}${box.state}${Console.WHITE}"
-          case "shutting-down" => f"${Console.YELLOW}${box.state}${Console.WHITE}"
-          case _ => box.state
-        }
-
-        println(f"${stage}%-5s ${box.role}%-25s ${state}%-20s ${box.id}%-15s ${box.address}%-20s")
+      val stage = box.stage match {
+        case "CODE" => f"${Console.MAGENTA}${box.stage}${Console.WHITE}"
+        case "PROD" => f"${Console.CYAN}${box.stage}${Console.WHITE}"
+        case _ => box.stage
       }
 
-      client.shutdown()
+      val state = box.state match {
+        case "running" => f"${Console.GREEN}${box.state}${Console.WHITE}"
+        case "terminated"|
+             "stopped" => f"${Console.RED}${box.state}${Console.WHITE}"
+        case "shutting-down" => f"${Console.YELLOW}${box.state}${Console.WHITE}"
+        case _ => box.state
+      }
+
+      println(f"${stage}%-5s ${box.role}%-25s ${state}%-20s ${box.id}%-15s ${box.address}%-20s")
     }
+
+    Ec2.ec2Client.shutdown()
+
   }
 
   private def getInstances(client: AmazonEC2Client): List[Instance] = {

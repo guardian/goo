@@ -32,18 +32,12 @@ class CloudFormationCommand() extends Command {
 }
 
 object CloudFormation {
-  lazy val s3Client: Option[AmazonS3Client] = {
-    Config.awsUserCredentials.map { provider =>
-      new AmazonS3Client(provider)
-    }
-  }
+  lazy val s3Client: AmazonS3Client = new AmazonS3Client(Config.awsUserCredentials)
 
-  lazy val cloudFormationClient: Option[AmazonCloudFormationClient] = {
-    Config.awsUserCredentials.map { provider =>
-      val client = new AmazonCloudFormationClient(provider)
-      client.setEndpoint("cloudformation.eu-west-1.amazonaws.com")
-      client
-    }
+  lazy val cloudFormationClient: AmazonCloudFormationClient = {
+    val client = new AmazonCloudFormationClient(Config.awsUserCredentials)
+    client.setEndpoint("cloudformation.eu-west-1.amazonaws.com")
+    client
   }
 
   def uploadTemplate(stage: String, client: AmazonS3Client, templateFilename: String): Either[Throwable, PutObjectResult] = {
@@ -84,11 +78,9 @@ class UpdateCommand() extends Command with Stage with StackName {
 
     for {
       stage <- getStage
-      s3client <- CloudFormation.s3Client
-      client <- CloudFormation.cloudFormationClient
-      result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
+      result <- CloudFormation.uploadTemplate(stage, CloudFormation.s3Client, templateFilename).right
       stackShortName <- Some(s"${stackName}-${stage}")
-      describeResult <- CloudFormation.describeStacks(client).right
+      describeResult <- CloudFormation.describeStacks(CloudFormation.cloudFormationClient).right
       stack <- describeResult.find(_.getStackName == stackShortName)
     } {
       val objectKey = new File(stage, templateFilename).getPath
@@ -99,14 +91,14 @@ class UpdateCommand() extends Command with Stage with StackName {
         .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
-      val result = allCatch either client.updateStack(request)
+      val result = allCatch either CloudFormation.cloudFormationClient.updateStack(request)
       result match {
         case Right(x) => println("Update Stack Request sent successfully.")
         case Left(e) => println(s"Exception updating stack: ${e.getMessage}")
       }
 
-      client.shutdown()
-      s3client.shutdown()
+      CloudFormation.cloudFormationClient.shutdown()
+      CloudFormation.s3Client.shutdown()
     }
   }
 }
@@ -117,9 +109,7 @@ class UpCommand() extends Command with Stage with StackName {
 
     for {
       stage <- getStage
-      s3client <- CloudFormation.s3Client
-      client <- CloudFormation.cloudFormationClient
-      result <- CloudFormation.uploadTemplate(stage, s3client, templateFilename).right
+      result <- CloudFormation.uploadTemplate(stage, CloudFormation.s3Client, templateFilename).right
       stackShortName <- Some(s"${stackName}-${stage}")
     } {
 
@@ -131,14 +121,14 @@ class UpCommand() extends Command with Stage with StackName {
         .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
-      val result = allCatch either client.createStack(request)
+      val result = allCatch either CloudFormation.cloudFormationClient.createStack(request)
       result match {
         case Right(x) => println("Create Stack Request sent successfully.")
         case Left(e) => println(s"Exception creating stack: ${e.getMessage}")
       }
 
-      client.shutdown()
-      s3client.shutdown()
+      CloudFormation.cloudFormationClient.shutdown()
+      CloudFormation.s3Client.shutdown()
     }
   }
 }
@@ -149,9 +139,8 @@ class DestroyCommand() extends Command with Stage with StackName {
 
     for {
       stage <- getStage
-      client <- CloudFormation.cloudFormationClient
       stackShortName <- Some(s"${stackName}-${stage}")
-      describeResult <- CloudFormation.describeStacks(client).right
+      describeResult <- CloudFormation.describeStacks(CloudFormation.cloudFormationClient).right
       stack <- describeResult.find(_.getStackName == stackShortName)
     } {
 
@@ -161,14 +150,14 @@ class DestroyCommand() extends Command with Stage with StackName {
         val request = new DeleteStackRequest()
           .withStackName(stackShortName)
 
-        val result = allCatch either client.deleteStack(request)
+        val result = allCatch either CloudFormation.cloudFormationClient.deleteStack(request)
         result match {
           case Right(x) => println("Delete Stack Request sent successfully.")
           case Left(e) => println(s"Exception deleting stack: ${e.getMessage}")
         }
       }
 
-      client.shutdown()
+      CloudFormation.cloudFormationClient.shutdown()
     }
   }
 }

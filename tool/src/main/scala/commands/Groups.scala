@@ -28,12 +28,10 @@ class GroupsCommand() extends Command {
 }
 
 object GroupsCommand {
-  lazy val autoscalingClient: Option[AmazonAutoScalingAsyncClient] = {
-    Config.awsUserCredentials.map { provider =>
-      val client = new AmazonAutoScalingAsyncClient(provider)
-      client.setEndpoint("autoscaling.eu-west-1.amazonaws.com")
-      client
-    }
+  lazy val autoscalingClient: AmazonAutoScalingAsyncClient = {
+    val client = new AmazonAutoScalingAsyncClient(Config.awsUserCredentials)
+    client.setEndpoint("autoscaling.eu-west-1.amazonaws.com")
+    client
   }
 }
 
@@ -48,34 +46,31 @@ class ListCommand() extends Command {
 
   override def executeImpl() {
 
-    GroupsCommand.autoscalingClient.map { client =>
+    val request = new DescribeAutoScalingGroupsRequest()
 
-      val request = new DescribeAutoScalingGroupsRequest()
+    val blockedResult = GroupsCommand.autoscalingClient.describeAutoScalingGroups(request)
 
-      val blockedResult = client.describeAutoScalingGroups(request)
+    val groups = blockedResult.getAutoScalingGroups.filter(_.getAutoScalingGroupName.toLowerCase.contains(groupFilter.toLowerCase))
 
-      val groups = blockedResult.getAutoScalingGroups.filter(_.getAutoScalingGroupName.toLowerCase.contains(groupFilter.toLowerCase))
+    groups.map { group =>
+      print(f"${group.getAutoScalingGroupName}%-64s")
 
-      groups.map { group =>
-        print(f"${group.getAutoScalingGroupName}%-64s")
+      if (listEverything && !verbose) {
+        print(s"${group.getMinSize}/${group.getDesiredCapacity}/${group.getMaxSize}\n")
+      } else {
 
-        if (listEverything && !verbose) {
-          print(s"${group.getMinSize}/${group.getDesiredCapacity}/${group.getMaxSize}\n")
-        } else {
+        println(s"\n\tLoad Balancers: [${group.getLoadBalancerNames.mkString(",")}]")
+        println(s"\tMin/Desired/Max = ${group.getMinSize}/${group.getDesiredCapacity}/${group.getMaxSize}\n")
 
-          println(s"\n\tLoad Balancers: [${group.getLoadBalancerNames.mkString(",")}]")
-          println(s"\tMin/Desired/Max = ${group.getMinSize}/${group.getDesiredCapacity}/${group.getMaxSize}\n")
+        group.getInstances.map( instance => {
+          println(f"\t${instance.getInstanceId}%-10s ${instance.getHealthStatus}/${instance.getLifecycleState}")
+        })
 
-          group.getInstances.map( instance => {
-            println(f"\t${instance.getInstanceId}%-10s ${instance.getHealthStatus}/${instance.getLifecycleState}")
-          })
-
-          println()
-        }
+        println()
       }
-
-      client.shutdown()
     }
+
+    GroupsCommand.autoscalingClient.shutdown()
   }
 }
 
@@ -95,27 +90,23 @@ class UpdateCommand() extends Command {
 
   override def executeImpl() {
 
-    for {
-      client <- GroupsCommand.autoscalingClient
-    } {
-      val request = new UpdateAutoScalingGroupRequest()
-        .withAutoScalingGroupName(groupName)
-        .withMinSize(minSize)
-        .withDesiredCapacity(desiredCapacity)
-        .withMaxSize(maxSize)
+    val request = new UpdateAutoScalingGroupRequest()
+      .withAutoScalingGroupName(groupName)
+      .withMinSize(minSize)
+      .withDesiredCapacity(desiredCapacity)
+      .withMaxSize(maxSize)
 
-      val result = allCatch either client.updateAutoScalingGroup(request)
+    val result = allCatch either GroupsCommand.autoscalingClient.updateAutoScalingGroup(request)
 
-      result match {
-        case Right(x) => {
-          println(s"Updated autoscaling group")
-        }
-        case Left(e) => {
-          println(s"Exception updating autoscaling group: ${e.getMessage}")
-        }
+    result match {
+      case Right(x) => {
+        println(s"Updated autoscaling group")
       }
-
-      client.shutdown()
+      case Left(e) => {
+        println(s"Exception updating autoscaling group: ${e.getMessage}")
+      }
     }
+
+    GroupsCommand.autoscalingClient.shutdown()
   }
 }

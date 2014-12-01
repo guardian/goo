@@ -28,15 +28,11 @@ class FastlyCommand() extends Command {
 }
 
 object Fastly {
-  lazy val s3Client: Option[AmazonS3Client] = {
-    Config.awsUserCredentials.map { provider =>
-      new AmazonS3Client(provider)
-    }
-  }
+  implicit lazy val s3Client: AmazonS3Client = new AmazonS3Client(Config.awsUserCredentials)
 
   val bucketName = "aws-frontend-logs"
 
-  def mapObjects(prefix: String, apply:(String => Unit))(implicit client: AmazonS3Client) {
+  def mapObjects(prefix: String, apply:(String => Unit)) {
 
     def expandObjectListing(listing: ObjectListing): List[String] = {
 
@@ -44,14 +40,14 @@ object Fastly {
       objects.map(apply)
 
       if (listing.isTruncated) {
-        objects ++ expandObjectListing(client.listNextBatchOfObjects(listing))
+        objects ++ expandObjectListing(s3Client.listNextBatchOfObjects(listing))
       } else {
         Nil
       }
     }
 
     val result = allCatch either {
-      val objectListing = client.listObjects(bucketName, prefix)
+      val objectListing = s3Client.listObjects(bucketName, prefix)
       expandObjectListing(objectListing)
     }
 
@@ -84,14 +80,13 @@ class LogsCommand() extends Command {
       false
     }
 
-    for (client <- Fastly.s3Client if validDirectory) {
-      implicit val s3client = client
+    if (validDirectory) {
       Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", downloadObject)
-      s3client.shutdown()
+      Fastly.s3Client.shutdown()
     }
   }
 
-  private def downloadObject(key: String)(implicit client: AmazonS3Client) {
+  private def downloadObject(key: String) {
     println(s"Downloading $key")
 
     val outputFile = new File(outputDir, key)
@@ -100,7 +95,7 @@ class LogsCommand() extends Command {
       outputFile.delete()
     }
 
-    val result = allCatch either client.getObject(new GetObjectRequest(Fastly.bucketName, key), outputFile);
+    val result = allCatch either Fastly.s3Client.getObject(new GetObjectRequest(Fastly.bucketName, key), outputFile);
 
     result match {
       case Left(ex) => println(s"Error: ${ex.getMessage}")
@@ -120,12 +115,8 @@ class LsCommand() extends Command {
   private val bucketName = "aws-frontend-logs"
 
   override def executeImpl() {
-
-    for (client <- Fastly.s3Client) {
-      implicit val s3client = client
-      Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", println)
-      s3client.shutdown()
-    }
+    Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", println)
+    Fastly.s3Client.shutdown()
   }
 }
 

@@ -14,7 +14,6 @@ object GooTool extends Build {
       libraryDependencies ++= Seq(
         "args4j" % "args4j" % "2.0.26",
         "com.amazonaws" % "aws-java-sdk" % "1.8.9.1",
-        "org.yaml" % "snakeyaml" % "1.13",
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "com.typesafe.play" %% "play-json" % "2.3.2",
         "org.slf4j" % "slf4j-simple" % "1.6.2",
