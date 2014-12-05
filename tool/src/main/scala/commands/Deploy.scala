@@ -200,7 +200,8 @@ object DeployCommand {
     "onward",
     "preview",
     "sport",
-    "archive"
+    "archive",
+    "rss"
   )
 
   val defaultDeployProjectNames = List(
@@ -215,7 +216,8 @@ object DeployCommand {
     "onward",
     "preview",
     "sport",
-    "archive"
+    "archive",
+    "rss"
   )
 
   val projectsExcludedFromCode = List(
