@@ -201,7 +201,8 @@ object DeployCommand {
     "preview",
     "sport",
     "archive",
-    "rss"
+    "rss",
+    "weather"
   )
 
   val defaultDeployProjectNames = List(
@@ -217,7 +218,8 @@ object DeployCommand {
     "preview",
     "sport",
     "archive",
-    "rss"
+    "rss",
+    "weather"
   )
 
   val projectsExcludedFromCode = List(
