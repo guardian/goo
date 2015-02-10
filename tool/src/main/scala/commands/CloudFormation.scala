@@ -74,11 +74,11 @@ object CloudFormation {
   }
 }
 
-class UpdateCommand() extends Command with Stage with StackName with Region{
+class UpdateCommand() extends Command with Stage with StackName with Region {
 
   override def executeImpl() {
 
-    val client = CloudFormation.cloudFormationClient(defaultRegion)
+    val client = CloudFormation.cloudFormationClient(getRegion().getOrElse(defaultRegion))
 
     for {
       stage <- getStage

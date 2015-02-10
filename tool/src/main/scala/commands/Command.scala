@@ -67,7 +67,7 @@ trait Region {
 
   protected val defaultRegion = AmazonRegion.getRegion(Regions.fromName(Regions.EU_WEST_1.getName))
 
-  protected def getRegion = {
+  protected def getRegion() = {
     (eu, us) match {
       case (true, false) => Some(defaultRegion)
       case (false, true) => Some(AmazonRegion.getRegion(Regions.fromName(Regions.US_EAST_1.getName)))
