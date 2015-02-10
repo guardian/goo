@@ -2,11 +2,12 @@ package goo.cloudformation
 
 import java.io.File
 
+import com.amazonaws.regions.{ServiceAbbreviations, Region => AmazonRegion}
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient
 import com.amazonaws.services.cloudformation.model._
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.PutObjectResult
-import goo.{Command, Config, GooSubCommandHandler, StackName, Stage}
+import goo.{Command, Config, GooSubCommandHandler, StackName, Stage, Region}
 import org.kohsuke.args4j.Argument
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 
@@ -34,9 +35,10 @@ class CloudFormationCommand() extends Command {
 object CloudFormation {
   lazy val s3Client: AmazonS3Client = new AmazonS3Client(Config.awsUserCredentials)
 
-  lazy val cloudFormationClient: AmazonCloudFormationClient = {
+  def cloudFormationClient(region: AmazonRegion): AmazonCloudFormationClient = {
+    val endpoint = region.getServiceEndpoint(ServiceAbbreviations.CloudFormation)
     val client = new AmazonCloudFormationClient(Config.awsUserCredentials)
-    client.setEndpoint("cloudformation.eu-west-1.amazonaws.com")
+    client.setEndpoint(endpoint)
     client
   }
 
@@ -72,15 +74,17 @@ object CloudFormation {
   }
 }
 
-class UpdateCommand() extends Command with Stage with StackName {
+class UpdateCommand() extends Command with Stage with StackName with Region{
 
   override def executeImpl() {
+
+    val client = CloudFormation.cloudFormationClient(defaultRegion)
 
     for {
       stage <- getStage
       result <- CloudFormation.uploadTemplate(stage, CloudFormation.s3Client, templateFilename).right
       stackShortName <- Some(s"${stackName}-${stage}")
-      describeResult <- CloudFormation.describeStacks(CloudFormation.cloudFormationClient).right
+      describeResult <- CloudFormation.describeStacks(client).right
       stack <- describeResult.find(_.getStackName == stackShortName)
     } {
       val objectKey = new File(stage, templateFilename).getPath
@@ -91,28 +95,31 @@ class UpdateCommand() extends Command with Stage with StackName {
         .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
-      val result = allCatch either CloudFormation.cloudFormationClient.updateStack(request)
+      val result = allCatch either client.updateStack(request)
       result match {
         case Right(x) => println("Update Stack Request sent successfully.")
         case Left(e) => println(s"Exception updating stack: ${e.getMessage}")
       }
 
-      CloudFormation.cloudFormationClient.shutdown()
       CloudFormation.s3Client.shutdown()
     }
+
+    client.shutdown()
   }
 }
 
-class UpCommand() extends Command with Stage with StackName {
+class UpCommand() extends Command with Stage with StackName with Region {
 
   override def executeImpl() {
 
     for {
       stage <- getStage
+      region <- getRegion
       result <- CloudFormation.uploadTemplate(stage, CloudFormation.s3Client, templateFilename).right
       stackShortName <- Some(s"${stackName}-${stage}")
     } {
 
+      val client = CloudFormation.cloudFormationClient(region)
       val objectKey = new File(stage, templateFilename).getPath
 
       val request = new CreateStackRequest()
@@ -121,26 +128,28 @@ class UpCommand() extends Command with Stage with StackName {
         .withCapabilities(Capability.CAPABILITY_IAM)
         .withParameters(CloudFormation.getParameters(stage))
 
-      val result = allCatch either CloudFormation.cloudFormationClient.createStack(request)
+      val result = allCatch either client.createStack(request)
       result match {
         case Right(x) => println("Create Stack Request sent successfully.")
         case Left(e) => println(s"Exception creating stack: ${e.getMessage}")
       }
 
-      CloudFormation.cloudFormationClient.shutdown()
+      client.shutdown()
       CloudFormation.s3Client.shutdown()
     }
   }
 }
 
-class DestroyCommand() extends Command with Stage with StackName {
+class DestroyCommand() extends Command with Stage with StackName with Region {
 
   override def executeImpl() {
+
+    val client = CloudFormation.cloudFormationClient(defaultRegion)
 
     for {
       stage <- getStage
       stackShortName <- Some(s"${stackName}-${stage}")
-      describeResult <- CloudFormation.describeStacks(CloudFormation.cloudFormationClient).right
+      describeResult <- CloudFormation.describeStacks(client).right
       stack <- describeResult.find(_.getStackName == stackShortName)
     } {
 
@@ -150,14 +159,13 @@ class DestroyCommand() extends Command with Stage with StackName {
         val request = new DeleteStackRequest()
           .withStackName(stackShortName)
 
-        val result = allCatch either CloudFormation.cloudFormationClient.deleteStack(request)
+        val result = allCatch either client.deleteStack(request)
         result match {
           case Right(x) => println("Delete Stack Request sent successfully.")
           case Left(e) => println(s"Exception deleting stack: ${e.getMessage}")
         }
       }
-
-      CloudFormation.cloudFormationClient.shutdown()
     }
+    client.shutdown()
   }
 }

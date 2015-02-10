@@ -1,5 +1,6 @@
 package goo
 
+import com.amazonaws.regions.{Region => AmazonRegion, Regions}
 import org.kohsuke.args4j.{OptionDef, CmdLineParser, Argument, Option}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommandHandler, Setter}
 import scala.util.control.Exception._
@@ -51,6 +52,27 @@ trait Stage {
       case (false, false, true) => Some("TEST")
       case _ =>
         println("Invalid stage: Specify one of --code, --test or --prod.")
+        None
+    }
+  }
+}
+
+trait Region {
+
+  @Option(name = "--eu", metaVar = "EU region", usage = "specifies AWS EU region")
+  private val eu: Boolean = false
+
+  @Option(name = "--us", metaVar = "US region", usage = "specifies AWS US region")
+  private val us: Boolean = false
+
+  protected val defaultRegion = AmazonRegion.getRegion(Regions.fromName(Regions.EU_WEST_1.getName))
+
+  protected def getRegion = {
+    (eu, us) match {
+      case (true, false) => Some(defaultRegion)
+      case (false, true) => Some(AmazonRegion.getRegion(Regions.fromName(Regions.US_EAST_1.getName)))
+      case _ =>
+        println("Invalid region: Specify one of --eu or --us.")
         None
     }
   }
