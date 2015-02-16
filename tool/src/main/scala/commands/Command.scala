@@ -69,11 +69,14 @@ trait Region {
 
   protected def getRegion() = {
     (eu, us) match {
-      case (true, false) => Some(defaultRegion)
-      case (false, true) => Some(AmazonRegion.getRegion(Regions.fromName(Regions.US_EAST_1.getName)))
+      case (true, false)  => defaultRegion
+      case (false, true)  => AmazonRegion.getRegion(Regions.fromName(Regions.US_EAST_1.getName))
+      case (false, false) =>
+        println("No region specified, assuming EU region.")
+        defaultRegion
       case _ =>
-        println("Invalid region: Specify one of --eu or --us.")
-        None
+        println("Multiple regions specified, assuming EU region.")
+        defaultRegion
     }
   }
 }

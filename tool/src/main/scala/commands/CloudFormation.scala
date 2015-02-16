@@ -78,7 +78,7 @@ class UpdateCommand() extends Command with Stage with StackName with Region {
 
   override def executeImpl() {
 
-    val client = CloudFormation.cloudFormationClient(getRegion().getOrElse(defaultRegion))
+    val client = CloudFormation.cloudFormationClient(getRegion())
 
     for {
       stage <- getStage
@@ -114,12 +114,11 @@ class UpCommand() extends Command with Stage with StackName with Region {
 
     for {
       stage <- getStage
-      region <- getRegion
       result <- CloudFormation.uploadTemplate(stage, CloudFormation.s3Client, templateFilename).right
       stackShortName <- Some(s"${stackName}-${stage}")
     } {
 
-      val client = CloudFormation.cloudFormationClient(region)
+      val client = CloudFormation.cloudFormationClient(getRegion())
       val objectKey = new File(stage, templateFilename).getPath
 
       val request = new CreateStackRequest()
