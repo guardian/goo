@@ -1,5 +1,6 @@
 package goo
 
+import commands.LogsCommand
 import commands.aws.{DevPermissionsCommand, RefreshTokensCommand}
 import goo.cloudformation.CloudFormationCommand
 import goo.deploy.DeployCommand
@@ -29,6 +30,7 @@ object GooCommand {
           println("\t fastly (logs|ls)")
           println("\t refresh-tokens")
           println("\t dev-perms")
+          println("\t logs download")
         } else {
           gooCommand.cmd.execute()
         }
@@ -54,6 +56,8 @@ class GooCommand() {
     new SubCommand(name = "ec2", impl = classOf[Ec2Command]),
     new SubCommand(name = "fastly", impl = classOf[FastlyCommand]),
     new SubCommand(name = "refresh-tokens", impl = classOf[RefreshTokensCommand]),
-    new SubCommand(name = "dev-perms", impl = classOf[DevPermissionsCommand])))
+    new SubCommand(name = "dev-perms", impl = classOf[DevPermissionsCommand]),
+    new SubCommand(name = "logs", impl = classOf[LogsCommand])
+  ))
   private val cmd: Command = null
 }
