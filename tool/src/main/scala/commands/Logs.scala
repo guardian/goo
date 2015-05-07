@@ -2,10 +2,7 @@ package commands
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path, Paths, StandardOpenOption}
-import java.util.concurrent.{Future => JavaFuture}
 
-import com.amazonaws.AmazonWebServiceRequest
-import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.logs.AWSLogsAsyncClient
 import com.amazonaws.services.logs.model._
 import commands.Logs.DownloadCommand
@@ -16,9 +13,8 @@ import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
 
 class LogsCommand() extends Command {
 
@@ -179,24 +175,4 @@ object Logs {
     }
   }
 
-}
-
-object AWSHelper {
-  def runAsyncCommand[A <: AmazonWebServiceRequest, B](command: (A, AsyncHandler[A, B]) =>
-    JavaFuture[B], request: A): Future[B] = {
-    val promise = Promise[B]()
-
-    val handler = new AsyncHandler[A, B] {
-      override def onSuccess(request: A, result: B): Unit = {
-        promise.complete(Success(result))
-      }
-      override def onError(exception: Exception): Unit = {
-        promise.complete(Failure(exception))
-      }
-    }
-
-    command(request, handler)
-
-    promise.future
-  }
 }
