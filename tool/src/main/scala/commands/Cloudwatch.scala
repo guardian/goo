@@ -5,7 +5,7 @@ import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 
 import com.amazonaws.services.logs.AWSLogsAsyncClient
 import com.amazonaws.services.logs.model._
-import commands.Logs.DownloadCommand
+import commands.Cloudwatch.LogsCommand
 import goo.{Command, Config, GooSubCommandHandler}
 import org.joda.time.DateTime
 import org.kohsuke.args4j.Argument
@@ -16,23 +16,28 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class LogsCommand() extends Command {
+class CloudwatchCommand() extends Command {
 
   @Argument(handler = classOf[GooSubCommandHandler])
   @SubCommands(value = Array(
-    new SubCommand(name = "download", impl = classOf[DownloadCommand])
+    new SubCommand(name = "logs", impl = classOf[LogsCommand])
   ))
   private val cmd: Command = null
 
   override def executeImpl(): Unit = cmd.execute()
-
-  override def printUsage() {
-    parser.printUsage(System.out)
-    println("logs download <log-group-name> <start-time> <end-time>")
-  }
 }
 
-object Logs {
+object Cloudwatch {
+
+  class LogsCommand() extends Command {
+    @Argument(handler = classOf[GooSubCommandHandler])
+    @SubCommands(value = Array(
+      new SubCommand(name = "download", impl = classOf[DownloadCommand])
+    ))
+    private val cmd: Command = null
+
+    override def executeImpl(): Unit = cmd.execute()
+  }
 
   class DownloadCommand() extends Command {
 
@@ -55,6 +60,11 @@ object Logs {
       usage = "Time to fetch to")
     private val endTimeStr: String = ""
     private lazy val endTime = DateTime.parse(endTimeStr)
+
+    override def printUsage() {
+      parser.printUsage(System.out)
+      println("download <log-group-name> <start-time> <end-time>")
+    }
 
     override def executeImpl(): Unit = {
 
