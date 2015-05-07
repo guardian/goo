@@ -229,6 +229,23 @@ Lists the fastly logs that have been streamed to the s3 bucket. Again, the defau
     fastly/www.theguardian.com/2014-11-02T19:00:00.000-RyJanKHsmK7mGhIAAAAA.log
     ...
 
+###Cloudwatch
+
+####`cloudwatch logs download`
+
+Downloads cloudwatch logs to a local directory.
+
+logs download \<log-group\> \<start-time\> \<end-time\>
+
+For example:  
+`./goo cloudwatch logs download PROD-admin 2015-05-05T14:15 2015-05-05T14:22`  
+returns a directory of downloaded logs:
+
+    aws.logs.PROD-admin.2015-05-05T14:15-to-2015-05-05T14:22  
+    
+The directory will contain a log file for each log stream having events during that period.
+
+
 Why is running goo so slow?
 ---------------------------
 
