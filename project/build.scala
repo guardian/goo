@@ -5,7 +5,7 @@ import sbt._
 object GooTool extends Build {
 
   // It should always be a snapshot because Sbt will always run update on snapshots.
-  val gooVersion = "3.4-SNAPSHOT"
+  val gooVersion = "3.5-SNAPSHOT"
 
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
@@ -20,7 +20,7 @@ object GooTool extends Build {
         "org.eclipse.jetty" % "jetty-webapp" % "9.2.2.v20140723"
       ),
       resolvers := Seq(
-        Classpaths.typesafeResolver,
+        Classpaths.typesafeReleases,
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
       ),
       publishTo <<= version { version: String =>
@@ -35,7 +35,7 @@ object GooTool extends Build {
   lazy val gooClient = Project("goo-client", file("client"))
     .settings(
       resolvers := Seq(
-        Classpaths.typesafeResolver,
+        Classpaths.typesafeReleases,
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots"),
       libraryDependencies += "com.gu" %% "frontend-goo-tool" % gooVersion
