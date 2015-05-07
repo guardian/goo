@@ -241,7 +241,7 @@ For example:
 `./goo cloudwatch logs download PROD-admin 2015-05-05T14:15 2015-05-05T14:22`  
 returns a directory of downloaded logs:
 
-    aws.logs.PROD-admin.2015-05-05T14:15-to-2015-05-05T14:22  
+    awslogs.PROD-admin.2015-05-05T14:15-to-2015-05-05T14:22  
     
 The directory will contain a log file for each log stream having events during that period.
 
