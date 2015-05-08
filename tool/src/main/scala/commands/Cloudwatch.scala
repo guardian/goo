@@ -14,6 +14,7 @@ import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.sys.SystemProperties
 import scala.util.control.NonFatal
 
 class CloudwatchCommand() extends Command {
@@ -60,6 +61,12 @@ object Cloudwatch {
       usage = "Time to fetch to")
     private val endTimeStr: String = ""
     private lazy val endTime = DateTime.parse(endTimeStr)
+
+    @Argument(index = 3,
+      required = false,
+      metaVar = "output-dir",
+      usage = "Output directory")
+    private val outputDir: String = new SystemProperties().getOrElse("cwd", "")
 
     override def printUsage() {
       parser.printUsage(System.out)
@@ -111,15 +118,17 @@ object Cloudwatch {
             .getLogEventsAsync, request)
         }
 
+        def path(parts: String*): Path = Paths.get(outputDir, parts: _*)
+
         def initLogFile(fileName: String): Unit = {
-          Files.createDirectories(Paths.get(dirName))
-          val filePath = Paths.get(dirName, fileName)
+          Files.createDirectories(path(dirName))
+          val filePath = path(dirName, fileName)
           Files.deleteIfExists(filePath)
           Files.createFile(filePath)
         }
 
         def appendEvents(fileName: String, events: Seq[String]): Path = {
-          val filePath = Paths.get(dirName, fileName)
+          val filePath = path(dirName, fileName)
           val contents = events.mkString("", "\n", "\n")
           Files.write(filePath,
             contents.getBytes(StandardCharsets.UTF_8),
