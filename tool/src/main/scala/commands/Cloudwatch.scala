@@ -70,7 +70,7 @@ object Cloudwatch {
 
     override def printUsage() {
       parser.printUsage(System.out)
-      println("download <log-group-name> <start-time> <end-time>")
+      println("download <log-group-name> <start-time> <end-time> [output-dir]")
     }
 
     override def executeImpl(): Unit = {

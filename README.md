@@ -235,7 +235,7 @@ Lists the fastly logs that have been streamed to the s3 bucket. Again, the defau
 
 Downloads cloudwatch logs to a local directory.
 
-logs download \<log-group\> \<start-time\> \<end-time\>
+logs download \<log-group\> \<start-time\> \<end-time\> \[output-dir\]
 
 For example:  
 `./goo cloudwatch logs download PROD-admin 2015-05-05T14:15 2015-05-05T14:22`  
@@ -243,7 +243,8 @@ returns a directory of downloaded logs:
 
     awslogs.PROD-admin.2015-05-05T14-15-to-2015-05-05T14-22  
     
-The directory will contain a log file for each log stream having events during that period.
+The directory will contain a log file for each log stream having events during that period.  
+If the `output-dir` argument is not specified, the output directory will be written to the current working directory.
 
 
 Why is running goo so slow?
