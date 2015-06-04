@@ -189,6 +189,7 @@ object DeployCommand {
   val allProjectNames = List(
     "admin",
     "applications",
+    "archive",
     "article",
     "commercial",
     "diagnostics",
@@ -197,11 +198,14 @@ object DeployCommand {
     "facia-tool",
     "facia-press",
     "identity",
+    "image",
     "onward",
+    "png-resizer",
     "preview",
-    "sport",
-    "archive",
+    "router",
     "rss",
+    "sport",
+    "training-preview",
     "weather"
   )
 
@@ -223,7 +227,8 @@ object DeployCommand {
   )
 
   val projectsExcludedFromCode = List(
-    "preview"
+    "preview",
+    "training-preview"
   )
 
   lazy val allCodeProjectNames = allProjectNames.filterNot(projectsExcludedFromCode.toSet)
@@ -260,7 +265,6 @@ class UnblockDeployCommand() extends Command {
   }
 }
 
-
 case class RiffRaffHistoryItem(time: String,
                                uuid: String,
                                projectName: String,
@@ -270,5 +274,3 @@ case class RiffRaffHistoryItem(time: String,
                                recipe: String,
                                status: String,
                                logURL: String)
-
-
