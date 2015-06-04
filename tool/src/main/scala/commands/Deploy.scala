@@ -138,7 +138,7 @@ class DeployCommand() extends Command with Stage {
           .secure
           .GET
           .addQueryParameter("key", key)
-          .addQueryParameter("projectName", s"frontend::$project")
+          .addQueryParameter("projectName", s"frontend::$project$$")
           .addQueryParameter("stage", stage)
           .addQueryParameter("pageSize", "1")
           .addHeader("Content-Type", "application/json")
