@@ -55,7 +55,7 @@ class DeployCommand() extends Command with Stage {
         if stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project)
       } {
         val deploy = Seq(
-          "project" -> JsString(s"frontend::${project}"),
+          "project" -> JsString(s"dotcom:${project}"),
           "build" -> JsString("lastSuccessful"),
           "stage" -> JsString(stage.toUpperCase))
 
@@ -138,7 +138,7 @@ class DeployCommand() extends Command with Stage {
           .secure
           .GET
           .addQueryParameter("key", key)
-          .addQueryParameter("projectName", s"frontend::$project$$")
+          .addQueryParameter("projectName", s"dotcom:$project$$")
           .addQueryParameter("stage", stage)
           .addQueryParameter("pageSize", "1")
           .addHeader("Content-Type", "application/json")
