@@ -205,12 +205,14 @@ object DeployCommand {
     "router",
     "rss",
     "sport",
+    "static",
     "training-preview"
   )
 
   val defaultDeployProjectNames = List(
     "admin",
     "applications",
+    "archive",
     "article",
     "commercial",
     "diagnostics",
@@ -220,7 +222,7 @@ object DeployCommand {
     "onward",
     "preview",
     "sport",
-    "archive",
+    "static",
     "rss"
   )
 
