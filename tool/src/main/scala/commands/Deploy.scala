@@ -8,11 +8,18 @@ import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 
 class DeployCommand() extends Command with Stage {
 
   @option(name = "-n", aliases = Array("--name"), metaVar = "names", usage = "specifies the projects to deploy")
   private val names: String = DeployCommand.defaultDeployProjectNames.mkString(",")
+
+  @option(name = "-b", aliases = Array("--build"), metaVar = "buildIdString", usage = "specifies the build to deploy (optional)")
+  private val buildIdString: String = ""
+  private lazy val buildId = Try {
+    Integer.parseUnsignedInt(buildIdString)
+  }.toOption.map(_.toString).getOrElse("lastSuccessful")
 
   private def namesSpec = names.split(",")
 
@@ -34,7 +41,6 @@ class DeployCommand() extends Command with Stage {
 
   private def deploy() {
 
-
     val blockMessage = S3.get("aws-frontend-devtools", "deploy.lock")
 
     blockMessage.foreach{ message =>
@@ -48,7 +54,7 @@ class DeployCommand() extends Command with Stage {
       printFrontendStackStatus()
 
       for {
-        response <- promptForAction(s"Are you sure you want to Deploy? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
+        response <- promptForAction(s"Are you sure you want to Deploy build $buildId? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
         key <- Config.riffRaffKey
         stage <- getStage
         project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
@@ -56,7 +62,7 @@ class DeployCommand() extends Command with Stage {
       } {
         val deploy = Seq(
           "project" -> JsString(s"dotcom:${project}"),
-          "build" -> JsString("lastSuccessful"),
+          "build" -> JsString(buildId),
           "stage" -> JsString(stage.toUpperCase))
 
         val request = url("https://riffraff.gutools.co.uk/api/deploy/request")
@@ -84,12 +90,12 @@ class DeployCommand() extends Command with Stage {
   }
 
   private def printBuildStatus(): Unit = {
-    case class Build(description: String, id: String)
+    case class Build(description: String, statusUrl: String)
 
     // NOTE: you have to enable the status widget in Teamcity for any build you add here
     val buildsWeCareAbout = Seq(
-      Build("Next Gen 'root'", "bt1304"),
-      Build("Integration tests", "Frontend_IntegrationTests")
+      Build("Next Gen 'root'", "http://teamcity.gu-web.net:8111/externalStatus.html?buildTypeId=dotcom_master"),
+      Build("Integration tests", "https://teamcity.gutools.co.uk/externalStatus.html?js=1&buildTypeId=Frontend_IntegrationTests")
     )
 
     println(s"\n${Console.BLUE}Build status:\n")
@@ -98,11 +104,13 @@ class DeployCommand() extends Command with Stage {
 
       // even though there are API endpoints we can use, I have gone with simply comparing the HTML widget
       // this way we avoid developers having to configure or share Teamcity credentials
-      val request = url(s"https://teamcity.gutools.co.uk/externalStatus.html?js=1&buildTypeId=${build.id}")
+      val request = url(build.statusUrl)
 
       Http(request).either() match {
         case Right(response) if response.getStatusCode == 200 =>
           if (response.getResponseBody.contains("success.png")) printStatus("SUCCESS") else printStatus("FAILED")
+        case Right(response) =>
+          println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status: ${response}")
         case Left(a) => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status")
       }
 
