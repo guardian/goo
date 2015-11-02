@@ -150,6 +150,7 @@ The `deploy` command takes the following options:
 * `--prod`: Deploy to production.
 * `--code`: Deploy to code.
 * `--name STRING`: Name of the application you want to deploy, or a comma separated list of apps. Default to all apps.
+* `--build BUILDID` or `-b BUILDID`: teamcity build number to deploy
 
 `./goo deploy --code` returns:
 
