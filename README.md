@@ -175,6 +175,10 @@ The `deploy` command takes the following options:
     Deploying article - http://riffraff.gutools.co.uk/deployment/view/e58d7c43-96b0-4b7b-b217-81b7ba2aef1f
     Deploying onward - http://riffraff.gutools.co.uk/deployment/view/d2402528-d8dc-404a-bc09-6310b98442cf
 
+####`deploy [block] [unblock]`
+
+Block or unblock deploys to production.
+
 ###Cloudformation
 
 ####`cloudformation up`
