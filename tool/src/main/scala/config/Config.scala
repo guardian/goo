@@ -29,6 +29,7 @@ object Config {
 
   lazy val awsUserCredentials: AWSCredentialsProviderChain =
     new AWSCredentialsProviderChain(
+      new ProfileCredentialsProvider("frontend"),
       new ProfileCredentialsProvider("nextgen")
     )
 
