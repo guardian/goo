@@ -284,37 +284,9 @@ In sbt, `dev-build` can be executed using `run ec2 list`, for example.
 Publishing
 ----------
 
-Configure bintray if you haven't done so, and make sure you're a part of the [guardian](https://bintray.com/guardian/) organization.
+Register and configure bintray if you haven't done so, and make sure you're a part of the [guardian](https://bintray.com/guardian/) organization.
 
-1. git commit all changes
-2. git tag
-3. git push to server
-4. sbt publish
-
-A new version of `frontend-goo-tool` can be published to the [Guardian Github](https://github.com/guardian/guardian.github.com) 
-artifact repository.
-
-This is the process to publish a new version. Note that a version number is not incremented during publishing, due to snapshots. See [Version Numbering](#Version-Numbering):
-
-0. From goo.d directory, `./sbt "project frontend-goo-tool" publish` 
-        
-    [This will publish artifacts to ~/guardian.github.com, which is expected to be the local location of the Guardian artifact repository.]
-0. In ~/guardian.github.com: `git add .` published artifacts to git repo.
-0. From guardian.github.com directory, `./update-directory-index.sh`
-0. In ~/guardian.github.com: `git commit` and `git push` published artifacts to git repo.
-0. Merge change into platform repo.
-
-Version Numbering
------------------
-*gooVersion* in [build.scala](project/build.scala) takes the form `<major.minor[-SNAPSHOT]>`
-
-A major change is one that changes the behaviour of the tool.
-For example, the addition of a new command or a change to the way an existing command works.
-
-A minor change is a bug fix or an extension of the current implementation of a command without actually changing what the command does.
-For example, adding a type of server to the deploy task.
-
-When publishing a new release, it is important to use a snapshot. This is necessary because sbt automatically updates dependencies for
-snapshots, regardless of whether `update` is explicitly run or not. This behaviour is ideal for users of `goo-client`, because it ensures
-that they use the latest published version of `frontend-goo-tool` whenever they run a command.
- 
+1. `git commit` all your changes
+2. `git tag` the version you're publishing
+3. `git push` your branch to the server
+4. Start sbt and type `project frontend-goo-tool`, and then `publish`
