@@ -1,16 +1,14 @@
+import com.typesafe.sbt.GitVersioning
 import com.typesafe.sbt.SbtNativePackager._
 import sbt.Keys._
 import sbt._
+import bintray.BintrayKeys._
 
 object GooTool extends Build {
-
-  // It should always be a snapshot because Sbt will always run update on snapshots.
-  val gooVersion = "4.1-SNAPSHOT"
 
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
       organization := "com.gu",
-      version  := gooVersion,
       libraryDependencies ++= Seq(
         "args4j" % "args4j" % "2.0.26",
         "com.amazonaws" % "aws-java-sdk" % "1.8.9.1",
@@ -23,24 +21,20 @@ object GooTool extends Build {
         Classpaths.typesafeReleases,
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
       ),
-      publishTo <<= version { version: String =>
-        val publishType = if (version.endsWith("SNAPSHOT")) "snapshots" else "releases"
-        Some(Resolver.file(
-          "Guardian Github " + publishType,
-          file(System.getProperty("user.home") + "/guardian.github.com/maven/repo-" + publishType)
-        ))
-      }
+      bintrayOrganization := Some("guardian"),
+      bintrayRepository := "frontend",
+      licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
     )
+    .enablePlugins(GitVersioning)
 
-  lazy val gooClient = Project("goo-client", file("client"))
+  /*lazy val gooClient = Project("goo-client", file("client"))
     .settings(
       resolvers := Seq(
         Classpaths.typesafeReleases,
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-        "Guardian Github Snapshot" at "http://guardian.github.com/maven/repo-snapshots"),
-      libraryDependencies += "com.gu" %% "frontend-goo-tool" % gooVersion
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
+      libraryDependencies += "com.gu" %% "frontend-goo-tool" % "latest.integration"
     )
-    .settings(packageArchetype.java_application:_*)
+    .settings(packageArchetype.java_application:_*)*/
 
   lazy val gooDevBuild = Project("dev-build", file("."))
     .dependsOn(gooTool)
