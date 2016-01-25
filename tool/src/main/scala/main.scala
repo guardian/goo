@@ -1,7 +1,6 @@
 package goo
 
 import commands.CloudwatchCommand
-import commands.aws.{DevPermissionsCommand, RefreshTokensCommand}
 import goo.cloudformation.CloudFormationCommand
 import goo.deploy.DeployCommand
 import goo.ec2.Ec2Command
