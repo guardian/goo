@@ -15,7 +15,7 @@ object S3 {
   private val endpoint = Region.getRegion(Regions.fromName(Regions.EU_WEST_1.getName)).getServiceEndpoint(ServiceAbbreviations.S3)
 
   lazy val client: AmazonS3Client = {
-    val s3 = new AmazonS3Client(new ProfileCredentialsProvider("nextgen"))
+    val s3 = new AmazonS3Client(goo.Config.awsUserCredentials)
     s3.setEndpoint(endpoint)
     s3
   }
