@@ -6,16 +6,23 @@ import bintray.BintrayKeys._
 
 object GooTool extends Build {
 
+  val awsVersion = "1.10.49"
+
   lazy val gooTool = Project("frontend-goo-tool", file("tool"))
     .settings(
       organization := "com.gu",
       libraryDependencies ++= Seq(
         "args4j" % "args4j" % "2.0.26",
-        "com.amazonaws" % "aws-java-sdk" % "1.8.9.1",
+        "com.amazonaws" % "aws-java-sdk-s3" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-cloudformation" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-core" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-logs" % awsVersion,
         "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
         "com.typesafe.play" %% "play-json" % "2.3.2",
-        "org.slf4j" % "slf4j-simple" % "1.6.2",
-        "org.eclipse.jetty" % "jetty-webapp" % "9.2.2.v20140723"
+        "org.slf4j" % "slf4j-simple" % "1.6.2"
       ),
       resolvers := Seq(
         Classpaths.typesafeReleases,
@@ -27,14 +34,15 @@ object GooTool extends Build {
     )
     .enablePlugins(GitVersioning)
 
-  /*lazy val gooClient = Project("goo-client", file("client"))
+  lazy val gooClient = Project("goo-client", file("client"))
     .settings(
       resolvers := Seq(
         Classpaths.typesafeReleases,
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        Resolver.bintrayRepo("guardian", "frontend")),
       libraryDependencies += "com.gu" %% "frontend-goo-tool" % "latest.integration"
     )
-    .settings(packageArchetype.java_application:_*)*/
+    .settings(packageArchetype.java_application:_*)
 
   lazy val gooDevBuild = Project("dev-build", file("."))
     .dependsOn(gooTool)
