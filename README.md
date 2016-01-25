@@ -284,6 +284,13 @@ In sbt, `dev-build` can be executed using `run ec2 list`, for example.
 Publishing
 ----------
 
+Configure bintray if you haven't done so, and make sure you're a part of the [guardian](https://bintray.com/guardian/) organization.
+
+1. git commit all changes
+2. git tag
+3. git push to server
+4. sbt publish
+
 A new version of `frontend-goo-tool` can be published to the [Guardian Github](https://github.com/guardian/guardian.github.com) 
 artifact repository.
 
