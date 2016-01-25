@@ -1,5 +1,6 @@
 package goo.ec2
 
+import com.amazonaws.regions.{Regions, Region}
 import org.kohsuke.args4j.Argument
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import com.amazonaws.services.ec2.AmazonEC2Client
@@ -27,7 +28,7 @@ class Ec2Command() extends Command {
 object Ec2 {
   lazy val ec2Client: AmazonEC2Client = {
     val client = new AmazonEC2Client(Config.awsUserCredentials)
-    client.setEndpoint("ec2.eu-west-1.amazonaws.com")
+    client.setRegion(Region.getRegion(Regions.EU_WEST_1))
     client
   }
 }
