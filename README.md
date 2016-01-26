@@ -1,6 +1,8 @@
 Goo tool
 ========
 
+[ ![Download](https://api.bintray.com/packages/guardian/frontend/frontend-goo-tool/images/download.svg)](https://bintray.com/guardian/frontend/frontend-goo-tool/_latestVersion)
+
 This is an implementation of our multi-purpose platform tool. It allows a user to:
 
   * deploy our apps to EC2 server instances
