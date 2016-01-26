@@ -6,6 +6,7 @@ import goo.deploy.DeployCommand
 import goo.ec2.Ec2Command
 import goo.fastly.FastlyCommand
 import goo.groups.GroupsCommand
+import goo.version.VersionCommand
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, CmdLineParser, Option}
 
@@ -52,7 +53,8 @@ class GooCommand() {
     new SubCommand(name = "deploy", impl = classOf[DeployCommand]),
     new SubCommand(name = "ec2", impl = classOf[Ec2Command]),
     new SubCommand(name = "fastly", impl = classOf[FastlyCommand]),
-    new SubCommand(name = "cloudwatch", impl = classOf[CloudwatchCommand])
+    new SubCommand(name = "cloudwatch", impl = classOf[CloudwatchCommand]),
+    new SubCommand(name = "version", impl = classOf[VersionCommand])
   ))
   private val cmd: Command = null
 }
