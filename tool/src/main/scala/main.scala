@@ -29,6 +29,7 @@ object GooCommand {
           println("\t ec2 list")
           println("\t fastly (logs|ls)")
           println("\t cloudwatch logs download")
+          println("\t version")
         } else {
           gooCommand.cmd.execute()
         }
