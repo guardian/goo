@@ -51,9 +51,16 @@ A riff-raff key can be made [here](https://riffraff.gutools.co.uk/apiKeys/list)
 Commands
 --------
 
-All commands can be run with the helper script, called [goo](../goo). For ease of use,
-an alias could be created for global availability. The syntax is similar to gu, where
-subcommands are used with parameters.
+All commands can be run with the helper script, called [goo](../goo). The syntax
+is structured around subcommands called with parameters.
+
+###Version
+
+Check which version of goo you are using.
+
+`./goo version` returns:
+
+    Goo version: 0.X
 
 ###Groups
 
