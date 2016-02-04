@@ -94,7 +94,7 @@ class DeployCommand() extends Command with Stage {
 
     // NOTE: you have to enable the status widget in Teamcity for any build you add here
     val buildsWeCareAbout = Seq(
-      Build("Next Gen 'root'", "http://teamcity.gu-web.net:8111/externalStatus.html?buildTypeId=dotcom_master"),
+      Build("Most recent build on master", "http://teamcity.gu-web.net:8111/externalStatus.html?buildTypeId=dotcom_master"),
       Build("Integration tests", "https://teamcity.gutools.co.uk/externalStatus.html?js=1&buildTypeId=Frontend_IntegrationTests")
     )
 
