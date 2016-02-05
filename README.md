@@ -28,7 +28,7 @@ Users of this tool need the following:
 Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials, which will update your credentials file with:
 
 ```
-[nextgen]
+[frontend]
 aws_access_key_id=
 aws_secret_access_key=
 aws_session_token=
