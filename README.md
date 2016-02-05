@@ -25,12 +25,13 @@ Users of this tool need the following:
       
 1. `~/.aws/credentials`
 
-Ask your team mate to create you an account and securely send you the access key.  For security you must enable MFA - ask if you're not sure what this means.
+Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials, which will update your credentials file with:
 
 ```
 [nextgen]
-aws_access_key_id=[YOUR_AWS_ACCESS_KEY]
-aws_secret_access_key=[YOUR_AWS_SECRET_ACCESS_KEY]
+aws_access_key_id=
+aws_secret_access_key=
+aws_session_token=
 ```
 
 2. `~/.aws/config`
@@ -38,7 +39,7 @@ aws_secret_access_key=[YOUR_AWS_SECRET_ACCESS_KEY]
 Non-credentials information for aws should be stored in the config file, not in credentials. Note the slight syntax change compared to the credentials file.
 
 ```
-[profile nextgen]
+[profile frontend]
 region = eu-west-1
 ```
        
