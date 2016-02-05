@@ -25,7 +25,7 @@ Users of this tool need the following:
 
 1. `~/.aws/credentials`
 
-    Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials, which will update your credentials file with:
+    Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials link, which will update your credentials file with:
 
     ```
     [frontend]
