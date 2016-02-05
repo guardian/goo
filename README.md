@@ -25,27 +25,33 @@ Users of this tool need the following:
 
 1. `~/.aws/credentials`
 
-Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials, which will update your credentials file with:
+    Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials, which will update your credentials file with:
+
     ```
     [frontend]
     aws_access_key_id=
     aws_secret_access_key=
     aws_session_token=
     ```
+
 2. `~/.aws/config`
 
-Non-credentials information for aws should be stored in the config file, not in credentials. Note the slight syntax change compared to the credentials file.
+    Non-credentials information for aws should be stored in the config file, not in credentials. Note the slight syntax change compared to the credentials file.
+
     ```
     [profile frontend]
     region = eu-west-1
     ```
+
 3. `~/.riffraff`
 
-A riff-raff key file. Make a file `~/.riffraff` and ensure it has the contents:
+    A riff-raff key file. Make a file `~/.riffraff` and ensure it has the contents:
 
-    _YOUR_KEY_ 
+    ```
+    _YOUR_KEY_
+    ```
     
-A riff-raff key can be made [here](https://riffraff.gutools.co.uk/apiKeys/list)   
+    A riff-raff key can be made [here](https://riffraff.gutools.co.uk/apiKeys/list)
 
 Commands
 --------
