@@ -54,9 +54,9 @@ class DeployCommand() extends Command with Stage {
       printFrontendStackStatus()
 
       for {
-        response <- promptForAction(s"Are you sure you want to Deploy build $buildId? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
-        key <- Config.riffRaffKey
         stage <- getStage
+        response <- promptForAction(s"Are you sure you want to Deploy build $buildId to $stage? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
+        key <- Config.riffRaffKey
         project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
         if stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project)
       } {
