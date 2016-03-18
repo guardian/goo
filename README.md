@@ -298,6 +298,8 @@ Publishing
 
 Register and configure bintray if you haven't done so, and make sure you're a part of the [guardian](https://bintray.com/guardian/) organization.
 
+To configure bintray, start sbt and run `bintrayChangeCredentials`.
+
 1. `git commit` all your changes
 2. `git tag` the version you're publishing
 3. `git push` your branch to the server
