@@ -303,4 +303,4 @@ To configure bintray, start sbt and run `bintrayChangeCredentials`.
 1. `git commit` all your changes
 2. `git tag` the version you're publishing
 3. `git push` your branch to the server
-4. Start sbt and type `project frontend-goo-tool`, and then `publish`
+4. Start sbt and type `project frontend-goo-tool`, and then `publish` (you must have reloaded sbt since configuring bintray)
