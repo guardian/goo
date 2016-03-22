@@ -15,7 +15,7 @@ class DeployCommand() extends Command with Stage {
   @option(name = "-n", aliases = Array("--name"), metaVar = "names", usage = "specifies the projects to deploy")
   private val names: String = DeployCommand.defaultDeployProjectNames.mkString(",")
 
-  @option(name = "-b", aliases = Array("--build"), metaVar = "buildIdString", usage = "specifies the build to deploy (optional)")
+  @option(name = "-b", aliases = Array("--build"), metaVar = "buildIdString", usage = "specifies the build to deploy", required = true)
   private val buildIdString: String = ""
   private lazy val buildId = Try {
     Integer.parseUnsignedInt(buildIdString)
