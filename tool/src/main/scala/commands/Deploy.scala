@@ -7,6 +7,8 @@ import org.joda.time.DateTime
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
@@ -94,7 +96,7 @@ class DeployCommand() extends Command with Stage {
 
     // NOTE: you have to enable the status widget in Teamcity for any build you add here
     val buildsWeCareAbout = Seq(
-      Build("Most recent build on master", "http://teamcity.gu-web.net:8111/externalStatus.html?buildTypeId=dotcom_master")
+      Build("Most recent build on master: ", "http://teamcity.gu-web.net:8111/externalStatus.html?buildTypeId=dotcom_master")
     )
 
     println(s"\n${Console.BLUE}Build status:\n")
@@ -138,9 +140,9 @@ class DeployCommand() extends Command with Stage {
         case _ => DeployCommand.allProjectNames
       }
 
-      for {
+      val responses = for {
         project <- projects
-      } {
+      } yield {
         val request = url("https://riffraff.gutools.co.uk/api/history")
           .secure
           .GET
@@ -150,20 +152,20 @@ class DeployCommand() extends Command with Stage {
           .addQueryParameter("pageSize", "1")
           .addHeader("Content-Type", "application/json")
 
-        val response = Http(request).either()
-
-        response match {
+        Http(request).either.map {
           case Right(resp) if resp.getStatusCode == 200 =>
             val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
             val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
 
             items.map(printHistoryItem)
           case Right(resp) =>
-            println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for ${project}${Console.WHITE}")
+            println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for $project${Console.WHITE}")
           case Left(throwable) =>
-            println(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for ${project}${Console.WHITE}")
+            println(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for $project${Console.WHITE}")
         }
       }
+
+      Await.result(Future.sequence(responses), 10.seconds)
     }
   }
 
