@@ -7,9 +7,10 @@ import org.joda.time.DateTime
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
+
 import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 import scala.util.Try
 
 class DeployCommand() extends Command with Stage {
@@ -53,11 +54,13 @@ class DeployCommand() extends Command with Stage {
     if (blockMessage.isEmpty) {
 
       printBuildStatus()
-      printFrontendStackStatus()
+
+      val stackStatus = getFrontendStackStatus()
+      printFrontendStackStatus(stackStatus)
 
       for {
         stage <- getStage
-        response <- promptForAction(s"Are you sure you want to Deploy build $buildId to $stage? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
+        _ <- promptForAction(s"Are you sure you want to Deploy build $buildId to $stage? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
         key <- Config.riffRaffKey
         project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
         if stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project)
@@ -124,49 +127,69 @@ class DeployCommand() extends Command with Stage {
 
   private def blink(msg: String) = s"${Console.BLINK}${Console.BOLD}$msg${Console.RESET}"
 
-  private def printFrontendStackStatus() {
+  private def getFrontendStackStatus(): Map[String, Seq[Either[String, RiffRaffHistoryItem]]] = {
 
     implicit val readsHistoryItem = Json.reads[RiffRaffHistoryItem]
 
-    for {
-      key <- Config.riffRaffKey
-      stage <- List("CODE", "PROD")
-    } {
+    def getProjectStatus(riffRaffKey: String,
+                         stage: String,
+                         project: String): Future[Either[String, RiffRaffHistoryItem]] = {
 
-      println(s"\n${Console.BLUE}$stage deploy status:\n")
+      val request = url("https://riffraff.gutools.co.uk/api/history")
+        .secure
+        .GET
+        .addQueryParameter("key", riffRaffKey)
+        .addQueryParameter("projectName", s"dotcom:$project$$")
+        .addQueryParameter("stage", stage)
+        .addQueryParameter("pageSize", "1")
+        .addHeader("Content-Type", "application/json")
 
+      Http(request).either.map {
+        case Right(resp) if resp.getStatusCode == 200 =>
+          val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
+          val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
+          items.headOption.toRight(s"${Console.RED}Riff-raff no response for $project${Console.WHITE}")
+        case Right(resp) =>
+          Left(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for $project${Console.WHITE}")
+        case Left(throwable) =>
+          Left(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for $project${Console.WHITE}")
+      }
+    }
+
+    def getStageStatus(riffRaffKey: String, stage: String): Seq[Either[String, RiffRaffHistoryItem]] = {
       val projects = stage match {
         case "CODE" => DeployCommand.allCodeProjectNames
         case _ => DeployCommand.allProjectNames
       }
-
       val responses = for {
         project <- projects
       } yield {
-        val request = url("https://riffraff.gutools.co.uk/api/history")
-          .secure
-          .GET
-          .addQueryParameter("key", key)
-          .addQueryParameter("projectName", s"dotcom:$project$$")
-          .addQueryParameter("stage", stage)
-          .addQueryParameter("pageSize", "1")
-          .addHeader("Content-Type", "application/json")
-
-        Http(request).either.map {
-          case Right(resp) if resp.getStatusCode == 200 =>
-            val results = Json.parse(resp.getResponseBody) \ "response" \ "results"
-            val items = results.validate[Seq[RiffRaffHistoryItem]].asOpt.getOrElse(Nil)
-
-            items.map(printHistoryItem)
-          case Right(resp) =>
-            println(s"${Console.RED}${resp.getStatusCode} ${resp.getStatusText} Riff-raff status check failed for $project${Console.WHITE}")
-          case Left(throwable) =>
-            println(s"${Console.RED}${throwable.getMessage} Riff-raff check exception for $project${Console.WHITE}")
-        }
+        getProjectStatus(riffRaffKey, stage, project)
       }
-
       Await.result(Future.sequence(responses), 10.seconds)
     }
+
+    Config.riffRaffKey map { riffRaffKey =>
+      Seq("CODE", "PROD") map { stage =>
+        stage -> getStageStatus(riffRaffKey, stage)
+      }
+    } map (_.toMap) getOrElse Map.empty
+  }
+
+  private def printFrontendStackStatus(stackStatus: Map[String, Seq[Either[String, RiffRaffHistoryItem]]]) {
+    def printStageStatus(stage: String): Unit = {
+      println(s"\n${Console.BLUE}$stage deploy status:\n")
+      for {
+        projectStatus <- stackStatus.getOrElse(stage, Nil)
+      } yield {
+        projectStatus match {
+          case Left(errMessage) => println(errMessage)
+          case Right(status) => printHistoryItem(status)
+        }
+      }
+    }
+    printStageStatus("CODE")
+    printStageStatus("PROD")
   }
 
   private def printHistoryItem(item: RiffRaffHistoryItem) {
