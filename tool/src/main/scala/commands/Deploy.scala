@@ -58,9 +58,29 @@ class DeployCommand() extends Command with Stage {
       val stackStatus = getFrontendStackStatus()
       printFrontendStackStatus(stackStatus)
 
+      def okToDeployAnOldBuild(stage: String): Option[Boolean] = {
+        val stageStatus = stackStatus.getOrElse(stage, Nil)
+        val currBuildNumbers = stageStatus collect {
+          case projectStatus if projectStatus.isRight => projectStatus.right.get
+        } map (_.build.toInt)
+
+        if (currBuildNumbers.isEmpty) {
+          Some(true)
+        } else {
+          val currBuildNumber = currBuildNumbers.min
+          if (buildId.toInt < currBuildNumber) {
+            promptForAction(
+              s"You're deploying build $buildId when $stage is currently on build $currBuildNumber. " +
+                "Are you sure you want to do this?"
+            )
+          } else Some(true)
+        }
+      }
+
       for {
         stage <- getStage
         _ <- promptForAction(s"Are you sure you want to Deploy build $buildId to $stage? (if you see ${Console.RED}RED${Console.WHITE} above you want to think carefully)")
+        _ <- okToDeployAnOldBuild(stage)
         key <- Config.riffRaffKey
         project <- if (stage == "PROD") namesSpec.intersect(DeployCommand.allProjectNames) else namesSpec
         if stage == "PROD" || !DeployCommand.projectsExcludedFromCode.contains(project)
