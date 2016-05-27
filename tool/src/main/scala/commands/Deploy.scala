@@ -61,7 +61,7 @@ class DeployCommand() extends Command with Stage {
       def okToDeployAnOldBuild(stage: String): Option[Boolean] = {
         val stageStatus = stackStatus.getOrElse(stage, Nil)
         val currBuildNumbers = stageStatus collect {
-          case projectStatus if projectStatus.isRight => projectStatus.right.get
+          case Right(projectStatus) => projectStatus
         } map (_.build.toInt)
 
         if (currBuildNumbers.isEmpty) {
