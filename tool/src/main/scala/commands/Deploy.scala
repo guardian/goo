@@ -68,7 +68,8 @@ class DeployCommand() extends Command with Stage {
           Some(true)
         } else {
           val currBuildNumber = currBuildNumbers.min
-          if (buildId.toInt < currBuildNumber) {
+          val deployBuildNumber = Try(buildId.toInt).getOrElse(currBuildNumber)
+          if (deployBuildNumber < currBuildNumber) {
             promptForAction(
               s"You're deploying build $buildId when $stage is currently on build $currBuildNumber. " +
                 "Are you sure you want to do this?"
