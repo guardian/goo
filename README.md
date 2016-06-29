@@ -300,7 +300,8 @@ Register and configure bintray if you haven't done so, and make sure you're a pa
 
 To configure bintray, start sbt and run `bintrayChangeCredentials`.
 
-1. `git commit` all your changes
-2. `git tag` the version you're publishing
-3. `git push` your branch to the server. [`git push --follow-tags` will push tags as well as commits.]
-4. Start sbt and type `project frontend-goo-tool`, and then `publish` (you must have reloaded sbt since configuring bintray)
+1. `cd goo.d`
+2. `git commit` all your changes
+3. `git tag` the version you're publishing
+4. `git push` your branch to the server. [`git push --follow-tags` will push tags as well as commits.]
+5. Start sbt and type `project frontend-goo-tool`, and then `publish` (you must have reloaded sbt since configuring bintray)
