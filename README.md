@@ -33,7 +33,7 @@ Setup
 
 ### Preparation
 
-1. get Janus credentials for "frontend"
+1. get [janus](https://janus.gutools.co.uk) credentials for "frontend"
 1. cd to the "platform" directory in your terminal
 
 ### Deploy
