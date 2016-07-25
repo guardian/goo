@@ -26,6 +26,8 @@ Setup
     _YOUR_KEY_
     ```
 
+3. Janus access
+    Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk).
 
 ## Using the tool
 
