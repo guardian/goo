@@ -37,10 +37,10 @@ Setup
 1. cd to the "platform" directory in your terminal
 
 ### Deploy
-* `./goo deploy --code`
-* `./goo deploy --prod`
+* `./goo deploy --code -b <build_number>`
+* `./goo deploy --prod -b <build_number>`
 
-If you want a specific build, add `-b <build_number>`
+The `-b` parameter is optional - if you want the latest build, omit it
 
 ## More detailed help on commands
 
