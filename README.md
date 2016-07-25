@@ -3,61 +3,44 @@ Goo tool
 
 [ ![Download](https://api.bintray.com/packages/guardian/frontend/frontend-goo-tool/images/download.svg)](https://bintray.com/guardian/frontend/frontend-goo-tool/_latestVersion)
 
-This is an implementation of our multi-purpose platform tool. It allows a user to:
-
-  * deploy our apps to EC2 server instances
-  * view EC2 server groups and modify their sizes (known as 'scaling up/down a group')
-  * issue cloudformation commands
-  
-There are already ways to do these things; a user can use the Amazon CLI or dashboard,
-the riff-raff dashboard, or the existing ruby Gu gem. This implementation aims to be
-easier to use, because the frontend architecture means that batches of commands are
-usually required to do something, or the configuration of various stages and parameters
-can be time-consuming.
-
-Developers can publish new versions of goo using our maven repo, and users receive 
-updates the next time they use the tool.
+Deploy, scale, and cloudform, all in one command!
 
 Setup
 -----
 
-Users of this tool need the following:
+1. AWS config
 
-1. `~/.aws/credentials`
-
-    Ask your team to add you to the Frontend project in [janus](https://janus.gutools.co.uk). Follow the get AWS credentials link, which will update your credentials file with:
-
-    ```
-    [frontend]
-    aws_access_key_id=
-    aws_secret_access_key=
-    aws_session_token=
-    ```
-
-2. `~/.aws/config`
-
-    Non-credentials information for aws should be stored in the config file, not in credentials. Note the slight syntax change compared to the credentials file.
+    Create a file called `~/.aws/config` with this content:
 
     ```
     [profile frontend]
     region = eu-west-1
     ```
 
-3. `~/.riffraff`
+2. Riffraff key
 
-    A riff-raff key file. Make a file `~/.riffraff` and ensure it has the contents:
+    Make a riffraff key [here](https://riffraff.gutools.co.uk/apiKeys/list)
+    Put the key in `~/.riffraff`.
 
     ```
     _YOUR_KEY_
     ```
-    
-    A riff-raff key can be made [here](https://riffraff.gutools.co.uk/apiKeys/list)
 
-Commands
---------
 
-All commands can be run with the helper script, called [goo](../goo). The syntax
-is structured around subcommands called with parameters.
+## Using the tool
+
+### Preparation
+
+1. get Janus credentials for "frontend"
+1. cd to the "platform" directory in your terminal
+
+### Deploy
+* `./goo deploy --code`
+* `./goo deploy --prod`
+
+If you want a specific build, add `-b <build_number>`
+
+## More detailed help on commands
 
 ###Version
 
@@ -279,6 +262,9 @@ for keeping the package up-to-date. It's simple to do:
 
 Development
 -----------
+
+Developers can publish new versions of goo using our maven repo, and users receive 
+updates the next time they use the tool.
 
 The tool is made up of three parts:
 
