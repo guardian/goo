@@ -1,5 +1,6 @@
 package goo.deploy
 
+import com.ning.http.client.Response
 import commands.S3
 import dispatch._
 import goo.{Command, Config, GooSubCommandHandler, Stage}
@@ -7,6 +8,7 @@ import org.joda.time.DateTime
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import org.kohsuke.args4j.{Argument, Option => option}
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -116,33 +118,47 @@ class DeployCommand() extends Command with Stage {
   }
 
   private def printBuildStatus(): Unit = {
-    case class Build(description: String, statusUrl: String)
 
-    // NOTE: you have to enable the status widget in Teamcity for any build you add here
-    val buildsWeCareAbout = Seq(
-      Build("Most recent build on master: ", "https://teamcity.gu-web.net/externalStatus.html?buildTypeId=dotcom_master")
-    )
+    // Response deserialization
+    case class Build(buildNumber: Int, status: String)
+    case class Builds(builds: Seq[Build])
+    object BuildsJsonDeserializer extends (Response => Builds) {
+
+      override def apply(r: Response): Builds = {
+        (dispatch.as.String andThen (jsonString => parse(jsonString)))(r)
+      }
+
+      implicit val buildReader: Reads[Build] = (
+        (JsPath \ "number").read[String].map(_.toInt) and
+        (JsPath \ "status").read[String]
+        )(Build.apply _)
+
+      implicit val buildsResponseReader: Reads[Builds] = (__ \ "build").read[Seq[Build]].map{ builds => Builds(builds) }
+
+      private def parse(jsonString: String) = {
+        val jsValue = Json.parse(jsonString)
+        jsValue.as[Builds]
+      }
+
+    }
+
+    def printStatus(color: String, msg: String) = println(f"${Console.WHITE}${"Most recent build on master: "}%-25s${color}${msg}")
+    def printSuccess(status: String) = printStatus(Console.GREEN, status)
+    def printFailure(status: String) = printStatus(Console.RED, blink(status))
 
     println(s"\n${Console.BLUE}Build status:\n")
 
-    for (build <- buildsWeCareAbout) {
-
-      // even though there are API endpoints we can use, I have gone with simply comparing the HTML widget
-      // this way we avoid developers having to configure or share Teamcity credentials
-      val request = url(build.statusUrl)
-
-      Http(request).either() match {
-        case Right(response) if response.getStatusCode == 200 =>
-          if (response.getResponseBody.contains("success.png")) printStatus("SUCCESS") else printStatus("FAILED")
-        case Right(response) =>
-          println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status: ${response}")
-        case Left(a) => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}Unable to fetch status")
-      }
-
-      def printStatus(status: String) = status match {
-        case "SUCCESS" => println(f"${Console.WHITE}${build.description}%-25s${Console.GREEN}SUCCESS")
-        case other => println(f"${Console.WHITE}${build.description}%-25s${Console.RED}${blink(other)}")
-      }
+    // NOTE: you have to enable the guest account in Teamcity Settings
+    val teamcityUrl = "https://teamcity.gu-web.net/guestAuth/app/rest/builds?locator=buildType:(id:dotcom_master),count:1&fields=count,build(number,status)"
+    val request = url(teamcityUrl) <:< Map("Accept" -> "application/json")
+    Http(request OK BuildsJsonDeserializer).either() match {
+      case Right(response) if !response.builds.isEmpty =>
+        val build = response.builds.head
+        printSuccess(s"${build.status} (${build.buildNumber})")
+      case Right(response) =>
+        printFailure(s"No build in response '$response'")
+      case Left(ex) =>
+        printFailure(s"Unable to fetch status. '$ex'")
     }
   }
 
