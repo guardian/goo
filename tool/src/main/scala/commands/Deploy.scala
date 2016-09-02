@@ -119,8 +119,18 @@ class DeployCommand() extends Command with Stage {
 
   private def printBuildStatus(): Unit = {
 
+    def printStatus(color: String, msg: String) = println(f"${Console.WHITE}${"Most recent build on master: "}%-25s${color}${msg}")
+    def printSuccess(status: String) = printStatus(Console.GREEN, status)
+    def printFailure(status: String) = printStatus(Console.RED, blink(status))
+
     // Response deserialization
-    case class Build(buildNumber: Int, status: String)
+    case class Build(buildNumber: Int, status: String) {
+      def printStatus() = {
+        val msg = s"${status} (${buildNumber})"
+        if (status.contains("SUCCESS")) printSuccess(msg) else printFailure(msg)
+      }
+
+    }
     case class Builds(builds: Seq[Build])
     object BuildsJsonDeserializer extends (Response => Builds) {
 
@@ -142,10 +152,6 @@ class DeployCommand() extends Command with Stage {
 
     }
 
-    def printStatus(color: String, msg: String) = println(f"${Console.WHITE}${"Most recent build on master: "}%-25s${color}${msg}")
-    def printSuccess(status: String) = printStatus(Console.GREEN, status)
-    def printFailure(status: String) = printStatus(Console.RED, blink(status))
-
     println(s"\n${Console.BLUE}Build status:\n")
 
     // NOTE: you have to enable the guest account in Teamcity Settings
@@ -153,8 +159,7 @@ class DeployCommand() extends Command with Stage {
     val request = url(teamcityUrl) <:< Map("Accept" -> "application/json")
     Http(request OK BuildsJsonDeserializer).either() match {
       case Right(response) if !response.builds.isEmpty =>
-        val build = response.builds.head
-        printSuccess(s"${build.status} (${build.buildNumber})")
+        response.builds.head.printStatus()
       case Right(response) =>
         printFailure(s"No build in response '$response'")
       case Left(ex) =>
