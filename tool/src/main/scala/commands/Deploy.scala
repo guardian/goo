@@ -184,7 +184,6 @@ class DeployCommand() extends Command with Stage {
         .addQueryParameter("projectName", s"dotcom:$project$$")
         .addQueryParameter("stage", stage)
         .addQueryParameter("pageSize", "1")
-        .addHeader("Content-Type", "application/json")
 
       Http(request).either.map {
         case Right(resp) if resp.getStatusCode == 200 =>
