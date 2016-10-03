@@ -1,5 +1,7 @@
 package goo
 
+import java.io.File
+
 import com.amazonaws.regions.{Region => AmazonRegion, Regions}
 import org.kohsuke.args4j.{OptionDef, CmdLineParser, Argument, Option}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommandHandler, Setter}
@@ -86,7 +88,16 @@ trait StackName {
   @Argument(multiValued = false, metaVar = "stack name", usage = "short stack name", required = true, index = 0)
   protected val stackName: String = ""
 
-  protected lazy val templateFilename = stackName + ".json"
+  protected lazy val templateFilename: String = {
+    val yamlFilename = stackName + ".yaml"
+    val jsonFilename = stackName + ".json"
+    val yamlFile = new File(Config.cloudformationHome, yamlFilename)
+    if (yamlFile.exists) {
+      yamlFilename
+    } else {
+      jsonFilename
+    }
+  }
 }
 
 class GooSubCommandHandler(parser: CmdLineParser, option: OptionDef, setter: Setter[AnyRef])
