@@ -180,21 +180,21 @@ Block or unblock deploys to production.
 
 ####`cloudformation up`
 
-Creates a new stack with the given environment.
+Creates a new stack with the given environment. Yaml or Json files are accepted.
 
 `./goo cloudformation up --code frontend-logger` returns:
 
-    Uploaded template from: /platform/cloudformation/frontend-logger.json
+    Uploaded template from: /platform/cloudformation/frontend-logger.yaml
     Create Stack Request sent successfully.
 
 ####`cloudformation update`
 
 Updates an existing cloudformation stack. Do check the [AWS documentation](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html)
-concerning resource updates.
+concerning resource updates. Yaml or Json files are accepted.
 
 `./goo cloudformation update --code frontend` returns:
     
-    Uploaded template from: /platform/cloudformation/frontend.json
+    Uploaded template from: /platform/cloudformation/frontend.yaml
     Update Stack Request sent successfully.
     
 ####`cloudformation destroy`
