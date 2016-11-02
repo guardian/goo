@@ -3,6 +3,7 @@ package goo.fastly
 import java.io.File
 
 import org.kohsuke.args4j.Argument
+import org.kohsuke.args4j.{Option => ArgOption}
 import org.kohsuke.args4j.spi.{SubCommand, SubCommands}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.{ObjectListing, GetObjectRequest}
@@ -69,6 +70,9 @@ class LogsCommand() extends Command {
   @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 2)
   private val serviceName: String = "www.theguardian.com"
 
+  @ArgOption(name="-f", usage="truncate the key name to just the filename")
+  private val filenameOnly: Boolean = false;
+
   override def executeImpl() {
 
     val output = new File (outputDir)
@@ -89,7 +93,7 @@ class LogsCommand() extends Command {
   private def downloadObject(key: String) {
     println(s"Downloading $key")
 
-    val outputFile = new File(outputDir, key)
+    val outputFile = new File(outputDir, if (filenameOnly) key.split("/").last else key)
 
     if (outputFile.exists) {
       outputFile.delete()
