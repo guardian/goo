@@ -16,7 +16,8 @@ class FastlyCommand() extends Command {
 
   @Argument(handler = classOf[GooSubCommandHandler])
   @SubCommands(value = Array(new SubCommand(name = "logs", impl = classOf[LogsCommand]),
-                             new SubCommand(name = "ls", impl = classOf[LsCommand])))
+                             new SubCommand(name = "ls", impl = classOf[LsCommand]),
+                             new SubCommand(name = "partition", impl = classOf[PartitionCommand])))
   private val cmd: Command = null
 
   override def executeImpl() {
@@ -124,3 +125,33 @@ class LsCommand() extends Command {
   }
 }
 
+class PartitionCommand() extends Command {
+
+  @Argument(multiValued = false, metaVar = "log name filter", usage = "log name filter", required = true, index = 0)
+  private val logNameFilter: String = ""
+
+  @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 1)
+  private val serviceName: String = "www.theguardian.com"
+
+  val partitionedBucketName = "aws-frontend-logs-partitioned"
+
+  override def executeImpl() {
+
+    Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", copyAndRenameObject)
+    Fastly.s3Client.shutdown()
+
+  }
+
+  private def copyAndRenameObject(key: String) {
+    val targetKey = key.replaceFirst("T", "/").replaceFirst(":", "/").replaceFirst(":", "/")
+
+    println(s"Moving $key to $partitionedBucketName/$targetKey")
+
+    val result = allCatch either Fastly.s3Client.copyObject(Fastly.bucketName, key, partitionedBucketName, targetKey);
+
+    result match {
+      case Left(ex) => println(s"Error: ${ex.getMessage}")
+      case _ =>
+    }
+  }
+}

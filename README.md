@@ -231,6 +231,26 @@ Lists the fastly logs that have been streamed to the s3 bucket. Again, the defau
     fastly/www.theguardian.com/2014-11-02T19:00:00.000-RyJanKHsmK7mGhIAAAAA.log
     ...
 
+#### `fastly partition`
+
+Creates a copy of the raw logs and puts into another S3 bucket, but this time, partitioned for the benefit of Hive.
+
+`./goo fastly partition 2014-11-02T19:1 www.theguardian.com` will
+
+1. Copy the log files that match the datetime expression
+2. Partition the filename to the date and hour. For example:
+3. Copy it to aws-frontend-logs-partitioned
+
+For example:
+
+    aws-frontend-logs/fastly/www.theguardian.com/2014-11-02T19:10:00.000-FOra6ZvOWCaT1BIAAAAA.log
+
+will now be available here:
+
+    aws-frontend-logs-partitioned/fastly/www.theguardian.com/2014-11-02/19/10:00.000-FOra6ZvOWCaT1BIAAAAA.log
+
+
+
 ###Cloudwatch
 
 ####`cloudwatch logs download`
