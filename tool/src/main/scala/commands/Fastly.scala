@@ -183,9 +183,10 @@ class CatCommand() extends Command {
         val stream = result.getObjectContent
         val buffer: Array[Byte] = new Array[Byte](4096)
 
-        var n = 0;
-        while (-1 != (n = stream.read(buffer))) {
-          val stringbuf = new String(buffer.map(_.toChar))
+        var n = 0
+        while (-1 != n) {
+          n = stream.read(buffer)
+          val stringbuf = new String(buffer.slice(0, n).map(_.toChar))
           println(stringbuf)
         }
         stream.close()
