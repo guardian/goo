@@ -17,7 +17,8 @@ class FastlyCommand() extends Command {
   @Argument(handler = classOf[GooSubCommandHandler])
   @SubCommands(value = Array(new SubCommand(name = "logs", impl = classOf[LogsCommand]),
                              new SubCommand(name = "ls", impl = classOf[LsCommand]),
-                             new SubCommand(name = "partition", impl = classOf[PartitionCommand])))
+                             new SubCommand(name = "partition", impl = classOf[PartitionCommand]),
+                              new SubCommand(name = "cat", impl = classOf[CatCommand])))
   private val cmd: Command = null
 
   override def executeImpl() {
@@ -152,6 +153,43 @@ class PartitionCommand() extends Command {
     result match {
       case Left(ex) => println(s"Error: ${ex.getMessage}")
       case _ =>
+    }
+  }
+}
+
+class CatCommand() extends Command {
+
+  @Argument(multiValued = false, metaVar = "log name filter", usage = "log name filter", required = true, index = 0)
+  private val logNameFilter: String = ""
+
+  @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 1)
+  private val serviceName: String = "www.theguardian.com"
+
+  val partitionedBucketName = "aws-frontend-logs-partitioned"
+
+  override def executeImpl() {
+
+    Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", catObject)
+    Fastly.s3Client.shutdown()
+
+  }
+
+  private def catObject(key: String) {
+    val result = allCatch either Fastly.s3Client.getObject(Fastly.bucketName, key);
+
+    result match {
+      case Left(ex) => println(s"Error: ${ex.getMessage}")
+      case Right(result) => {
+        val stream = result.getObjectContent
+        val buffer: Array[Byte] = new Array[Byte](4096)
+
+        var n = 0;
+        while (-1 != (n = stream.read(buffer))) {
+          val stringbuf = new String(buffer.map(_.toChar))
+          println(stringbuf)
+        }
+        stream.close()
+      }
     }
   }
 }
