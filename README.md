@@ -73,32 +73,32 @@ List further detail about the matching EC2 autoscaling groups.
 
 `./goo groups list admin` returns:
 
-    frontend-CODE-AdminAutoscalingGroup-XXXX                
+    frontend-CODE-AdminAutoscalingGroup-XXXX
       Load Balancers: [frontend-AdminLoa-XXXX]
       Min/Desired/Max = 1/1/2
-    
+
       i-3739ee74 Healthy/Terminating
       i-37ad1875 Healthy/InService
-    
-    frontend-PROD-AdminAutoscalingGroup-XXXX                
+
+    frontend-PROD-AdminAutoscalingGroup-XXXX
       Load Balancers: [frontend-AdminLoa-XXXX]
       Min/Desired/Max = 1/1/2
-    
+
       i-07a51045 Healthy/InService
 
 `./goo groups list code-admin` returns:
 
-    frontend-CODE-AdminAutoscalingGroup-XXXX                
+    frontend-CODE-AdminAutoscalingGroup-XXXX
       Load Balancers: [frontend-AdminLoa-XXXX]
       Min/Desired/Max = 1/1/2
-    
+
       i-3739ee74 Healthy/Terminating
-      i-37ad1875 Healthy/InService 
+      i-37ad1875 Healthy/InService
 
 ####`groups update <autoscaling_group> <min> <desired> <max>`
 
 Update the named EC2 autoscaling group with the provided instance parameters.
-  
+
 `./goo groups update frontend-CODE-AdminAutoscalingGroup-XXXX 1 1 2` returns:
 
     Updated autoscaling group
@@ -121,7 +121,7 @@ Initiate riff-raff deployments for a given staging environment.
 
 ####`deploy list`
 
-Lists all the applications that this tool is configured to deploy. The list contains aliases that can be used in deploy command. 
+Lists all the applications that this tool is configured to deploy. The list contains aliases that can be used in deploy command.
 
 `./goo deploy list` returns:
 
@@ -139,7 +139,7 @@ Lists all the applications that this tool is configured to deploy. The list cont
 
 ####`deploy`
 
-Deploys frontend projects to a given environment. The subcommand uses riff-raff aliases, so for 
+Deploys frontend projects to a given environment. The subcommand uses riff-raff aliases, so for
 instance: `deploy article` will deploy `frontend-article`, and similarly for the other frontend applications.
 
 The `deploy` command takes the following options:
@@ -193,10 +193,10 @@ Updates an existing cloudformation stack. Do check the [AWS documentation](http:
 concerning resource updates. Yaml or Json files are accepted.
 
 `./goo cloudformation update --code frontend` returns:
-    
+
     Uploaded template from: /platform/cloudformation/frontend.yaml
     Update Stack Request sent successfully.
-    
+
 ####`cloudformation destroy`
 
 Destroys an existing stack.
@@ -206,7 +206,7 @@ Destroys an existing stack.
     Delete Stack Request sent successfully.
 
 For safety reasons, the tool does not permit deletion of PROD stacks. Please do so manually.
-    
+
 `./goo cloudformation destroy --prod frontend-logger` returns:
 
     Can not delete PROD stacks
@@ -249,6 +249,11 @@ will now be available here:
 
     aws-frontend-logs-partitioned/fastly/www.theguardian.com/2014-11-02/19/10:00.000-FOra6ZvOWCaT1BIAAAAA.log
 
+####`fastly cat`
+
+Streams the fastly logs to stdout.
+
+`./goo fastly cat 2014-11-02T19:10:00.000` will output all logs in that time frame to stdout.
 
 
 ###Cloudwatch
@@ -259,20 +264,20 @@ Downloads cloudwatch logs to a local directory.
 
 logs download \<log-group\> \<start-time\> \<end-time\> \[output-dir\]
 
-For example:  
-`./goo cloudwatch logs download PROD-admin 2015-05-05T14:15 2015-05-05T14:22`  
+For example:
+`./goo cloudwatch logs download PROD-admin 2015-05-05T14:15 2015-05-05T14:22`
 returns a directory of downloaded logs:
 
-    awslogs.PROD-admin.2015-05-05T14-15-to-2015-05-05T14-22  
-    
-The directory will contain a log file for each log stream having events during that period.  
+    awslogs.PROD-admin.2015-05-05T14-15-to-2015-05-05T14-22
+
+The directory will contain a log file for each log stream having events during that period.
 If the `output-dir` argument is not specified, the output directory will be written to the current working directory.
 
 
 Why is running goo so slow?
 ---------------------------
 
-Historically, the platform tool was manually updated. This led to developers using different versions, or getting in trouble 
+Historically, the platform tool was manually updated. This led to developers using different versions, or getting in trouble
 with some external package dependencies. Goo seeks to auto-update dependencies on startup, using sbt.
 
 A simple way to workaround the slow startup is to skip sbt, and the dependency update. This means the user is responsible
@@ -285,7 +290,7 @@ for keeping the package up-to-date. It's simple to do:
 Development
 -----------
 
-Developers can publish new versions of goo using our maven repo, and users receive 
+Developers can publish new versions of goo using our maven repo, and users receive
 updates the next time they use the tool.
 
 The tool is made up of three parts:
@@ -299,8 +304,8 @@ This convoluted approach enables users to invoke the bash script simply with par
 Developers can run sbt using the supplied [sbt script](sbt). From here, the `dev-build` project can be used for development.
 
 For testing, developers can use the `dev-build` sbt project to invoke tasks in a similar manner to the [goo](../goo) script.
-In sbt, `dev-build` can be executed using `run ec2 list`, for example.  
- 
+In sbt, `dev-build` can be executed using `run ec2 list`, for example.
+
 Publishing
 ----------
 
