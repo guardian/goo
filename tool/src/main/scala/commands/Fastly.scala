@@ -165,8 +165,6 @@ class CatCommand() extends Command {
   @Argument(multiValued = false, metaVar = "service name", usage = "fastly service name", required = false, index = 1)
   private val serviceName: String = "www.theguardian.com"
 
-  val partitionedBucketName = "aws-frontend-logs-partitioned"
-
   override def executeImpl() {
 
     Fastly.mapObjects(s"fastly/$serviceName/$logNameFilter", catObject)
