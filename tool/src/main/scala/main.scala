@@ -25,7 +25,7 @@ object GooCommand {
           println("Goo subcommands:")
           println("\t groups (list|update)")
           println("\t cloudformation (up|update|destroy)")
-          println("\t deploy (list)")
+          println("\t deploy (list) [DEPRECATED]")
           println("\t ec2 list")
           println("\t fastly (logs|ls)")
           println("\t cloudwatch logs download")
