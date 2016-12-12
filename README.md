@@ -3,7 +3,7 @@ Goo tool
 
 [ ![Download](https://api.bintray.com/packages/guardian/frontend/frontend-goo-tool/images/download.svg)](https://bintray.com/guardian/frontend/frontend-goo-tool/_latestVersion)
 
-Deploy, scale, and cloudform, all in one command!
+Scale, cloudform, all in one command!
 
 Setup
 -----
@@ -35,14 +35,6 @@ Setup
 
 1. get [janus](https://janus.gutools.co.uk) credentials for "frontend"
 1. cd to the "platform" directory in your terminal
-
-### Deploy
-* `./goo deploy --code -b <build_number>`
-* `./goo deploy --prod -b <build_number>`
-
-The `-b` parameter is optional - if you want the latest build, omit it
-
-## More detailed help on commands
 
 ###Version
 
@@ -114,67 +106,6 @@ List all known EC2 instances.
 `./goo ec2 list` returns:
 
 <img src="doc/ec2-list.png" alt="Ec2 list" width="600px" height="300px" />
-
-###Deploy
-
-Initiate riff-raff deployments for a given staging environment.
-
-####`deploy list`
-
-Lists all the applications that this tool is configured to deploy. The list contains aliases that can be used in deploy command.
-
-`./goo deploy list` returns:
-
-    article
-    facia
-    applications
-    sport
-    identity
-    admin
-    facia-tool
-    discussion
-    onward
-    diagnostics
-    commercial
-
-####`deploy`
-
-Deploys frontend projects to a given environment. The subcommand uses riff-raff aliases, so for
-instance: `deploy article` will deploy `frontend-article`, and similarly for the other frontend applications.
-
-The `deploy` command takes the following options:
-
-* `--prod`: Deploy to production.
-* `--code`: Deploy to code.
-* `--name STRING`: Name of the application you want to deploy, or a comma separated list of apps. Default to all apps.
-* `--build BUILDID` or `-b BUILDID`: teamcity build number to deploy
-
-`./goo deploy --code` returns:
-
-    Deploying article - http://riffraff.gutools.co.uk/deployment/view/c7eacaa1-e46b-4b27-9036-ad81f10af020
-    Deploying facia - http://riffraff.gutools.co.uk/deployment/view/46b57358-4d6c-41b5-924e-b970eeed1684
-    Deploying applications - http://riffraff.gutools.co.uk/deployment/view/392a8091-3bc8-405d-ae08-6fac55fc5925
-    Deploying sport - http://riffraff.gutools.co.uk/deployment/view/1ea521a3-8c3a-4ddc-a9bc-420e92396d4e
-    Deploying identity - http://riffraff.gutools.co.uk/deployment/view/4a7e4927-d891-4ca1-b3aa-31571f8d0265
-    Deploying admin - http://riffraff.gutools.co.uk/deployment/view/8d351d0f-e7af-4605-a01c-cc4c407f5131
-    Deploying facia-tool - http://riffraff.gutools.co.uk/deployment/view/68888d5d-b5e7-47ed-90a8-1160577f37a1
-    Deploying discussion - http://riffraff.gutools.co.uk/deployment/view/7658b19a-7618-4715-9e46-852a79e51b8a
-    Deploying onward - http://riffraff.gutools.co.uk/deployment/view/9cc85a36-7909-4f64-b2c1-9989094f61b9
-    Deploying diagnostics - http://riffraff.gutools.co.uk/deployment/view/c5871a05-a205-4eef-9b04-dc6d7ac16d7c
-    Deploying commercial - http://riffraff.gutools.co.uk/deployment/view/62c7e4bd-f27d-4874-be7c-4dd9b9f77c3f
-
-`./goo deploy --code --name admin` returns:
-
-    Deploying admin - http://riffraff.gutools.co.uk/deployment/view/6b6592dc-f487-46a1-a340-b61258e980cd
-
-`./goo deploy --code --name article,onward` returns:
-
-    Deploying article - http://riffraff.gutools.co.uk/deployment/view/e58d7c43-96b0-4b7b-b217-81b7ba2aef1f
-    Deploying onward - http://riffraff.gutools.co.uk/deployment/view/d2402528-d8dc-404a-bc09-6310b98442cf
-
-####`deploy block|unblock`
-
-Block or unblock deploys to production.
 
 ###Cloudformation
 
