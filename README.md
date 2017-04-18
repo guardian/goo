@@ -36,7 +36,7 @@ Setup
 1. get [janus](https://janus.gutools.co.uk) credentials for "frontend"
 1. cd to the "platform" directory in your terminal
 
-###Version
+### Version
 
 Check which version of goo you are using.
 
@@ -44,11 +44,11 @@ Check which version of goo you are using.
 
     Goo version: 0.X
 
-###Groups
+### Groups
 
 These subcommands are for working with Amazon autoscaling groups.
 
-####`groups list`
+#### `groups list`
 
 List all the EC2 autoscaling groups.
 
@@ -59,7 +59,7 @@ List all the EC2 autoscaling groups.
     frontend-CODE-ArchiveAutoscalingGroup-XXXX             1/1/2
     ...
 
-####`groups list <grep_pattern>`
+#### `groups list <grep_pattern>`
 
 List further detail about the matching EC2 autoscaling groups.
 
@@ -87,7 +87,7 @@ List further detail about the matching EC2 autoscaling groups.
       i-3739ee74 Healthy/Terminating
       i-37ad1875 Healthy/InService
 
-####`groups update <autoscaling_group> <min> <desired> <max>`
+#### `groups update <autoscaling_group> <min> <desired> <max>`
 
 Update the named EC2 autoscaling group with the provided instance parameters.
 
@@ -95,11 +95,11 @@ Update the named EC2 autoscaling group with the provided instance parameters.
 
     Updated autoscaling group
 
-###EC2
+### EC2
 
 There is currently only one subcommand for checking EC2 instances.
 
-####`ec2 list`
+#### `ec2 list`
 
 List all known EC2 instances.
 
@@ -107,9 +107,9 @@ List all known EC2 instances.
 
 <img src="doc/ec2-list.png" alt="Ec2 list" width="600px" height="300px" />
 
-###Cloudformation
+### Cloudformation
 
-####`cloudformation up`
+#### `cloudformation up`
 
 Creates a new stack with the given environment. Yaml or Json files are accepted.
 
@@ -118,7 +118,7 @@ Creates a new stack with the given environment. Yaml or Json files are accepted.
     Uploaded template from: /platform/cloudformation/frontend-logger.yaml
     Create Stack Request sent successfully.
 
-####`cloudformation update`
+#### `cloudformation update`
 
 Updates an existing cloudformation stack. Do check the [AWS documentation](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html)
 concerning resource updates. Yaml or Json files are accepted.
@@ -128,7 +128,7 @@ concerning resource updates. Yaml or Json files are accepted.
     Uploaded template from: /platform/cloudformation/frontend.yaml
     Update Stack Request sent successfully.
 
-####`cloudformation destroy`
+#### `cloudformation destroy`
 
 Destroys an existing stack.
 
@@ -142,9 +142,9 @@ For safety reasons, the tool does not permit deletion of PROD stacks. Please do 
 
     Can not delete PROD stacks
 
-###Fastly
+### Fastly
 
-####`fastly logs`
+#### `fastly logs`
 
 Downloads the fastly logs to a local directory. You can optionally define a service, like 'beta.theguardian.com'. The default service is 'www.theguardian.com'.
 
@@ -152,7 +152,7 @@ Downloads the fastly logs to a local directory. You can optionally define a serv
 
     Downloading fastly/beta.theguardian.com/2014-11-02T18:37:00.000-ghfSz8LOa6_R_0IAAAAA.log
 
-####`fastly ls`
+#### `fastly ls`
 
 Lists the fastly logs that have been streamed to the s3 bucket. Again, the default service is 'www.theguardian.com'.
 
@@ -180,16 +180,16 @@ will now be available here:
 
     aws-frontend-logs-partitioned/fastly/www.theguardian.com/2014-11-02/19/10:00.000-FOra6ZvOWCaT1BIAAAAA.log
 
-####`fastly cat`
+#### `fastly cat`
 
 Streams the fastly logs to stdout.
 
 `./goo fastly cat 2014-11-02T19:10:00.000` will output all logs in that time frame to stdout.
 
 
-###Cloudwatch
+### Cloudwatch
 
-####`cloudwatch logs download`
+#### `cloudwatch logs download`
 
 Downloads cloudwatch logs to a local directory.
 
